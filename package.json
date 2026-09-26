@@ -1,0 +1,32 @@
+{
+  "name": "strife-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "wrangler dev",
+    "check": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "build": "npm run check && wrangler deploy --dry-run --outdir .build",
+    "test": "node --test tests/worker.test.mjs",
+    "test:browser": "node --test tests/browser.test.mjs",
+    "deploy": "wrangler deploy",
+    "fonts": "node scripts/copy-fonts.mjs",
+    "release:local": "node scripts/upload-release.mjs --local",
+    "release:upload": "node scripts/upload-release.mjs --remote"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@cloudflare/workers-types": "^5.20260926.1",
+    "@fontsource/barlow-condensed": "^5.3.0",
+    "@fontsource/dm-sans": "^5.3.0",
+    "playwright": "^1.63.0",
+    "prettier": "^3.9.9",
+    "typescript": "^7.0.2",
+    "wrangler": "^4.141.0"
+  }
+}

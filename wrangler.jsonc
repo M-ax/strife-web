@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "strife-web",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-03-01",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [{ "pattern": "strife.zip", "custom_domain": true }],
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*", "/download/*"],
+  },
+  "r2_buckets": [{ "binding": "RELEASES", "bucket_name": "strife-releases" }],
+  "dev": {
+    "port": 4317,
+    "inspector_port": 4318,
+    "ip": "127.0.0.1",
+    "local_protocol": "http",
+  },
+}
