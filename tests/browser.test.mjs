@@ -5,13 +5,17 @@ import { createReadStream } from "node:fs";
 import { createHash } from "node:crypto";
 import { chromium } from "playwright";
 import AxeBuilder from "@axe-core/playwright";
-import release from "../release.json" with { type: "json" };
+import manifest from "../release.json" with { type: "json" };
+const release = {
+  ...manifest.downloads.find((item) => item.id === "windows-x64-portable"),
+  version: manifest.version,
+};
 
 const origin = process.env.STRIFE_WEB_URL || "http://127.0.0.1:4317";
 
 test(
   "responsive page, keyboard controls, accessibility, and a verified Windows download",
-  { timeout: 120000 },
+  { timeout: 240000 },
   async () => {
     await mkdir("artifacts", { recursive: true });
     const browser = await chromium.launch({
@@ -23,6 +27,7 @@ test(
       acceptDownloads: true,
     });
     const page = await context.newPage();
+    const portable = page.locator('[data-release="windows-x64-portable"]');
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     try {
@@ -33,8 +38,8 @@ test(
         /script-src 'self'/,
       );
       await page.evaluate(() => document.fonts.ready);
-      await page
-        .locator("#release-info")
+      await portable
+        .locator("[data-release-info]")
         .filter({ hasText: release.version })
         .waitFor();
       assert.equal(
@@ -42,9 +47,24 @@ test(
         "Another Discord alternative has hit the towers",
       );
       assert.equal(
-        await page.locator("a[data-download]").first().getAttribute("href"),
-        "/download/windows-x64",
+        await portable.locator("a[data-download]").getAttribute("href"),
+        "/download/windows-x64-portable",
       );
+      for (const os of ["Windows", "Linux", "macOS"]) {
+        assert.equal(
+          await page
+            .getByRole("heading", { name: "Strife for " + os, exact: true })
+            .count(),
+          1,
+        );
+      }
+      for (const item of manifest.downloads) {
+        const option = page.locator('[data-release="' + item.id + '"]');
+        assert.equal(
+          await option.locator("[data-download]").getAttribute("href"),
+          "/download/" + item.id,
+        );
+      }
       await page.getByRole("button", { name: "02 Chat" }).click();
       assert.equal(
         await page
@@ -80,16 +100,19 @@ test(
       await faq.locator("summary").focus();
       await page.keyboard.press("Enter");
       assert.equal(await faq.getAttribute("open"), "");
-      await page.locator("#checksum-details summary").click();
-      assert.equal(await page.locator("#checksum").innerText(), release.sha256);
+      await portable.locator("[data-checksum-details] summary").click();
+      assert.equal(
+        await portable.locator("[data-checksum]").innerText(),
+        release.sha256,
+      );
       await context.grantPermissions(["clipboard-read", "clipboard-write"]);
-      await page.getByRole("button", { name: "Copy checksum" }).click();
+      await portable.getByRole("button", { name: "Copy checksum" }).click();
       assert.equal(
         await page.evaluate(() => navigator.clipboard.readText()),
         release.sha256,
       );
       const downloadPromise = page.waitForEvent("download");
-      await page.locator(".download-main").click();
+      await portable.locator(".download-main").click();
       const download = await downloadPromise;
       assert.equal(download.suggestedFilename(), release.filename);
       const file = "artifacts/" + release.filename;
@@ -153,14 +176,48 @@ test(
         route.fulfill({ json: { available: false } }),
       );
       await page.goto(origin);
-      await page
+      await portable
         .locator(".download-main")
         .filter({ hasText: "Get the source" })
         .waitFor();
       assert.equal(
-        await page.locator(".download-main").getAttribute("href"),
+        await portable.locator(".download-main").getAttribute("href"),
         "https://github.com/M-ax/strife",
       );
+      await page.unroute("**/api/release");
+      await page.route("**/api/release", async (route) => {
+        const response = await route.fetch();
+        const catalog = await response.json();
+        for (const item of catalog.downloads)
+          if (item.id === "linux-x64") item.available = false;
+        await route.fulfill({ json: catalog });
+      });
+      await page.goto(origin);
+      const linux = page.locator('[data-release="linux-x64"]');
+      await linux.getByRole("link", { name: "Get the source" }).waitFor();
+      assert.equal(
+        await linux.locator("[data-checksum-details]").isVisible(),
+        false,
+      );
+      assert.equal(
+        await portable.locator(".download-main").getAttribute("href"),
+        "/download/windows-x64-portable",
+      );
+      await page.unroute("**/api/release");
+      await page.route("**/api/release", (route) => route.abort());
+      await page.goto(origin);
+      await portable
+        .locator("[data-release-status]")
+        .filter({ hasText: "Couldn't check" })
+        .waitFor();
+      for (const item of manifest.downloads) {
+        assert.equal(
+          await page
+            .locator('[data-release="' + item.id + '"] [data-download]')
+            .getAttribute("href"),
+          "/download/" + item.id,
+        );
+      }
       console.log(
         "Verified: desktop/mobile layout, WCAG audit, preview and FAQ controls, clipboard, full ZIP integrity, missing-release fallback.",
       );
@@ -171,7 +228,7 @@ test(
 );
 
 test("real Worker supports resumed downloads and headers", async () => {
-  const response = await fetch(origin + "/download/windows-x64", {
+  const response = await fetch(origin + "/download/windows-x64-portable", {
     headers: { Range: "bytes=0-3" },
   });
   assert.equal(response.status, 206);
@@ -183,14 +240,42 @@ test("real Worker supports resumed downloads and headers", async () => {
     [...new Uint8Array(await response.arrayBuffer())],
     [80, 75, 3, 4],
   );
-  const checksum = await fetch(origin + "/download/windows-x64.sha256");
+  const checksum = await fetch(
+    origin + "/download/windows-x64-portable.sha256",
+  );
   assert.equal(
     await checksum.text(),
     release.sha256 + "  " + release.filename + "\n",
   );
-  const head = await fetch(origin + "/download/windows-x64", {
+  const head = await fetch(origin + "/download/windows-x64-portable", {
     method: "HEAD",
   });
   assert.equal(head.headers.get("Content-Length"), String(release.bytes));
   assert.equal((await head.arrayBuffer()).byteLength, 0);
+});
+
+test("every platform supports resumed downloads and checksum files", async () => {
+  for (const item of manifest.downloads) {
+    const response = await fetch(origin + "/download/" + item.id, {
+      headers: { Range: "bytes=0-3" },
+    });
+    assert.equal(response.status, 206, item.id);
+    assert.equal(response.headers.get("Content-Type"), item.contentType);
+    assert.equal(
+      response.headers.get("Content-Range"),
+      "bytes 0-3/" + item.bytes,
+    );
+    const bytes = [...new Uint8Array(await response.arrayBuffer())];
+    assert.equal(bytes.length, 4);
+    if (item.filename.endsWith(".zip")) assert.deepEqual(bytes, [80, 75, 3, 4]);
+    if (item.filename.endsWith(".exe"))
+      assert.deepEqual(bytes.slice(0, 2), [77, 90]);
+    if (item.filename.endsWith(".tar.gz"))
+      assert.deepEqual(bytes.slice(0, 2), [31, 139]);
+    const checksum = await fetch(origin + "/download/" + item.id + ".sha256");
+    assert.equal(
+      await checksum.text(),
+      item.sha256 + "  " + item.filename + "\n",
+    );
+  }
 });

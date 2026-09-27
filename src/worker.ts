@@ -1,5 +1,17 @@
 import release from "../release.json" with { type: "json" };
 
+interface Download {
+  id: string;
+  platform: string;
+  filename: string;
+  key: string;
+  bytes: number;
+  sha256: string;
+  contentType: string;
+}
+
+const downloads: Download[] = release.downloads;
+
 interface Env {
   ASSETS: Fetcher;
   RELEASES: R2Bucket;
@@ -16,7 +28,7 @@ const securityHeaders = {
 
 function unavailable(): Response {
   return new Response(
-    '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#111113"><meta name="color-scheme" content="dark"><meta name="robots" content="noindex"><title>Download on a coffee break. | Strife</title><link rel="stylesheet" href="/style.css"><link rel="icon" href="/assets/favicon.svg?v=orange-mark"></head><body><main class="error-page wrap"><a class="brand" href="/"><img src="/assets/mark.svg?v=orange-mark" width="36" height="36" alt="">STRIFE.</a><h1>The download is<br>on a coffee break.</h1><p>The Windows build is temporarily unavailable. Try again shortly, or grab the source while we get our act together.</p><a class="button button-primary" href="https://github.com/M-ax/strife">Get the source <span aria-hidden="true">↗</span></a><p><a href="/#download">Back to Strife</a></p></main></body></html>',
+    '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#111113"><meta name="color-scheme" content="dark"><meta name="robots" content="noindex"><title>Download on a coffee break. | Strife</title><link rel="stylesheet" href="/style.css"><link rel="icon" href="/assets/favicon.svg?v=orange-mark"></head><body><main class="error-page wrap"><a class="brand" href="/"><img src="/assets/mark.svg?v=orange-mark" width="36" height="36" alt="">STRIFE.</a><h1>The download is<br>on a coffee break.</h1><p>This build is temporarily unavailable. Try again shortly, or grab the source while we get our act together.</p><a class="button button-primary" href="https://github.com/M-ax/strife">Get the source <span aria-hidden="true">↗</span></a><p><a href="/#download">Back to Strife</a></p></main></body></html>',
     {
       status: 503,
       headers: {
@@ -63,18 +75,25 @@ function matchesEtag(value: string | null, etag: string): boolean {
   );
 }
 
-async function currentObject(env: Env): Promise<R2Object | null> {
-  if (!release.bytes || !/^[a-f0-9]{64}$/.test(release.sha256)) return null;
-  const object = await env.RELEASES.head(release.key);
-  return object?.size === release.bytes ? object : null;
+async function currentObject(
+  env: Env,
+  item: Download,
+): Promise<R2Object | null> {
+  if (!item.bytes || !/^[a-f0-9]{64}$/.test(item.sha256)) return null;
+  const object = await env.RELEASES.head(item.key);
+  return object?.size === item.bytes ? object : null;
 }
 
-async function download(request: Request, env: Env): Promise<Response> {
-  const object = await currentObject(env);
+async function download(
+  request: Request,
+  env: Env,
+  item: Download,
+): Promise<Response> {
+  const object = await currentObject(env, item);
   if (!object) return unavailable();
   const headers = new Headers({
-    "Content-Type": "application/zip",
-    "Content-Disposition": 'attachment; filename="' + release.filename + '"',
+    "Content-Type": item.contentType,
+    "Content-Disposition": 'attachment; filename="' + item.filename + '"',
     "Accept-Ranges": "bytes",
     ETag: object.httpEtag,
     "Last-Modified": object.uploaded.toUTCString(),
@@ -111,7 +130,7 @@ async function download(request: Request, env: Env): Promise<Response> {
   if (request.method === "HEAD") return new Response(null, { headers });
   // Keys are immutable; pin the read to the HEAD result to avoid a torn resume
   // if someone nevertheless replaces an object during a request.
-  const body = await env.RELEASES.get(release.key, {
+  const body = await env.RELEASES.get(item.key, {
     range,
     onlyIf: { etagMatches: object.etag },
   });
@@ -127,30 +146,42 @@ async function route(request: Request, env: Env): Promise<Response> {
     );
   const path = new URL(request.url).pathname;
   if (path === "/api/release") {
-    const object = await currentObject(env);
+    const catalog = await Promise.all(
+      downloads.map(async (item) => {
+        // One unavailable platform must not hide the other downloads.
+        const object = await currentObject(env, item).catch(() => null);
+        const { key: _key, ...metadata } = item;
+        return {
+          ...metadata,
+          available: object !== null,
+          url: "/download/" + item.id,
+        };
+      }),
+    );
     return Response.json(
       {
         version: release.version,
-        platform: release.platform,
-        filename: release.filename,
-        bytes: release.bytes,
-        sha256: release.sha256,
         publishedAt: release.publishedAt,
-        available: object !== null,
-        url: "/download/windows-x64",
+        available: catalog.some((item) => item.available),
+        downloads: catalog,
       },
       { headers: { "Cache-Control": "no-store" } },
     );
   }
-  if (path === "/download/windows-x64") return download(request, env);
-  if (path === "/download/windows-x64.sha256") {
-    if (!(await currentObject(env))) return unavailable();
-    const text = release.sha256 + "  " + release.filename + "\n";
+  const item = downloads.find(
+    (item) =>
+      path === "/download/" + item.id ||
+      path === "/download/" + item.id + ".sha256",
+  );
+  if (item && !path.endsWith(".sha256")) return download(request, env, item);
+  if (item) {
+    if (!(await currentObject(env, item))) return unavailable();
+    const text = item.sha256 + "  " + item.filename + "\n";
     return new Response(text, {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
         "Content-Disposition":
-          'attachment; filename="' + release.filename + '.sha256"',
+          'attachment; filename="' + item.filename + '.sha256"',
         "Cache-Control": "no-store",
         "Content-Length": String(new TextEncoder().encode(text).length),
       },

@@ -17,7 +17,8 @@
     "deploy": "wrangler deploy",
     "fonts": "node scripts/copy-fonts.mjs",
     "release:local": "node scripts/upload-release.mjs --local",
-    "release:upload": "node scripts/upload-release.mjs --remote"
+    "release:upload": "node scripts/upload-release.mjs --remote",
+    "release:verify": "node scripts/verify-release.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
