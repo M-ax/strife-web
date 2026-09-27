@@ -1,15 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="#f4f1e8"/>
-  <rect x="855" width="345" height="630" fill="#f04a24"/>
-  <path d="M45 110h750" stroke="#cccac0"/>
-  <rect x="45" y="36" width="46" height="46" rx="2" fill="#f04a24"/>
-  <path d="M78 44H62L53 60h16l-6 13h9l11-21H67l4-8z" fill="#20211e"/>
-  <text x="103" y="72" font-family="Arial,sans-serif" font-size="35" font-weight="bold" letter-spacing="-2" fill="#20211e">STRIFE.</text>
-  <text x="45" y="181" font-family="Arial,sans-serif" font-size="13" font-weight="bold" letter-spacing="3" fill="#55584c">NEW APP. SAME DEGENERATES.</text>
-  <g font-family="Impact,'Arial Narrow',sans-serif" font-weight="bold" font-size="83" letter-spacing="-1" fill="#20211e">
-    <text x="41" y="284">Another Discord</text><text x="41" y="377">alternative has</text><text x="41" y="470" fill="#d93614">hit the towers</text>
+  <rect width="1200" height="630" fill="#111113"/>
+  <rect x="855" width="345" height="630" fill="#19191d"/>
+  <path d="M45 110h750" stroke="#2c2b31"/>
+  <rect x="45" y="36" width="46" height="46" rx="2" fill="#19191d"/>
+  <path d="M78 44H62L53 60h16l-6 13h9l11-21H67l4-8z" fill="#ff975e"/>
+  <text x="103" y="72" font-family="Arial,sans-serif" font-size="35" font-weight="bold" letter-spacing="-2" fill="#ff975e">STRIFE.</text>
+  <text x="45" y="181" font-family="Arial,sans-serif" font-size="13" font-weight="bold" letter-spacing="3" fill="#a19da7">NEW APP. SAME DEGENERATES.</text>
+  <g font-family="Impact,'Arial Narrow',sans-serif" font-weight="bold" font-size="83" letter-spacing="-1" fill="#eeedf0">
+    <text x="41" y="284">Another Discord</text><text x="41" y="377">alternative has</text><text x="41" y="470" fill="#ff975e">hit the towers</text>
   </g>
-  <text x="45" y="570" font-family="Arial,sans-serif" font-size="20" fill="#65655d">Native Mumble voice. Helltube watch parties. Your servers.</text>
-  <path d="M1110 160H969l-70 133h141l-50 99h80l80-172h-140l30-60z" fill="#20211e"/>
-  <text x="1027" y="544" text-anchor="middle" font-family="Arial,sans-serif" font-size="30" font-weight="bold" fill="#20211e">strife.zip ↗</text>
+  <text x="45" y="570" font-family="Arial,sans-serif" font-size="20" fill="#a19da7">Native Mumble voice. Helltube watch parties. Your servers.</text>
+  <path d="M1110 160H969l-70 133h141l-50 99h80l80-172h-140l30-60z" fill="#ff975e"/>
+  <text x="1027" y="544" text-anchor="middle" font-family="Arial,sans-serif" font-size="30" font-weight="bold" fill="#ff975e">strife.zip ↗</text>
 </svg>
