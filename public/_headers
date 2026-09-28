@@ -8,3 +8,9 @@
   Cache-Control: public, max-age=604800
 /assets/*
   Cache-Control: public, max-age=86400
+/scripts/*.sh
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: no-cache
+/scripts/SHA256SUMS
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: no-cache

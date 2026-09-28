@@ -3,15 +3,28 @@ import { copyFile, mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { planReleaseDocs, writeReleaseDocs } from "./release-docs.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const [source, version] = process.argv.slice(2);
+const [source, version, requestedRef, ...extra] = process.argv.slice(2);
 if (
+  extra.length ||
   !source ||
   !/^\d+\.\d+\.\d+(?:-[A-Za-z0-9]+(?:[.-][A-Za-z0-9]+)*)?$/.test(version ?? "")
 )
   throw new Error(
-    "Usage: node scripts/import-release.mjs ARTIFACT_DIRECTORY VERSION",
+    "Usage: node scripts/import-release.mjs ARTIFACT_DIRECTORY VERSION [SOURCE_REF]",
+  );
+
+const previous = JSON.parse(
+  await readFile(path.join(root, "release.json"), "utf8"),
+);
+const sourceRef =
+  requestedRef ??
+  (previous.version === version ? previous.sourceRef : undefined);
+if (!sourceRef)
+  throw new Error(
+    "A new release requires SOURCE_REF: the Strife commit, tag, or branch used to build its packages.",
   );
 
 const targets = [
@@ -56,6 +69,12 @@ const downloads = await Promise.all(
     };
   }),
 );
+const publishedAt =
+  previous.version === version
+    ? previous.publishedAt
+    : new Date().toISOString().slice(0, 10);
+const release = { version, publishedAt, sourceRef, downloads };
+const docs = await planReleaseDocs(root, release);
 const destination = path.join(root, "releases");
 await mkdir(destination, { recursive: true });
 for (const item of downloads) {
@@ -75,13 +94,10 @@ for (const item of downloads) {
   }
   await writeFile(archive + ".sha256", `${item.sha256}  ${item.filename}\n`);
 }
-let publishedAt = new Date().toISOString().slice(0, 10);
-const previous = JSON.parse(
-  await readFile(path.join(root, "release.json"), "utf8"),
-);
-if (previous.version === version) publishedAt = previous.publishedAt;
 await writeFile(
   path.join(root, "release.json"),
-  JSON.stringify({ version, publishedAt, downloads }, null, 2) + "\n",
+  JSON.stringify(release, null, 2) + "\n",
 );
+await writeReleaseDocs(docs);
 console.log(`Imported ${downloads.length} verified packages for ${version}.`);
+console.log(`Updated release references in ${docs.length} pages.`);

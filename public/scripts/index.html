@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#111113" />
+    <meta name="color-scheme" content="dark" />
+    <title>TL;DR server scripts | Strife</title>
+    <meta
+      name="description"
+      content="Download Strife's Mumble bootstrap, pinned Helltube installer launcher, and server diagnostics. Copyable curl-to-bash commands and an exact account of what each script changes."
+    />
+    <link rel="canonical" href="https://strife.zip/scripts/" />
+    <link rel="icon" href="/assets/favicon.svg?v=orange-mark" />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/wiki/wiki.css" />
+    <script type="module" src="/wiki/wiki.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header docs-header wrap">
+      <a class="brand" href="/" aria-label="Strife home"
+        ><img
+          src="/assets/mark.svg?v=orange-mark"
+          width="36"
+          height="36"
+          alt=""
+        />STRIFE.</a
+      >
+      <nav aria-label="Main navigation">
+        <a href="/wiki/">Getting started wiki</a
+        ><a href="/scripts/" aria-current="page">Server scripts</a
+        ><a href="/#download">Get Strife</a>
+      </nav>
+    </header>
+    <main id="main" class="wrap">
+      <div class="docs-hero">
+        <p class="eyebrow">TL;DR / SOME ASSEMBLY AUTOMATED</p>
+        <h1>The server<br />shortcut department.</h1>
+        <p class="lede">
+          Three scripts. Two services. One place to find out exactly what
+          happens when you hit Enter.
+        </p>
+      </div>
+      <div class="docs-article">
+        <aside class="callout script-note">
+          <p>
+            Be stupid and lazy, let the AI slop scramble your server's brain
+            like an octopus.
+          </p>
+          <sub><sub><sub><sub><sub>Have you ever googled how octopus reproduction works?  <a href="https://en.wikipedia.org/wiki/Octopus#Reproduction">It's fucking wild, man.</a></sub></sub></sub></sub></sub>
+        </aside>
+        <p>
+          Run the install commands
+          <strong>inside your server's SSH session</strong>. Installers need
+          root; diagnostics do not. These scripts do not buy a VPS, set DNS,
+          open your provider firewall, or install the Strife desktop client. For
+          the full order of operations, start with the
+          <a href="/wiki/#tldr">getting-started checklist</a>.
+        </p>
+        <p>
+          A pipe executes the downloaded script with the privileges you give
+          Bash. You can also download, read, and verify the same files below.
+          The scripts fail on errors, keep credentials out of their normal
+          output, and perform platform checks before installation. Run
+          <code>--help</code> to inspect requirements.
+        </p>
+        <section id="mumble">
+          <h2>01 / Mumble voice server</h2>
+          <p>
+            <strong>Target:</strong> Linux x86_64 or ARM64 with a local Docker
+            Engine and Compose v2, OpenSSL, iproute2, and coreutils. Follow the
+            <a href="/wiki/#docker">per-OS Docker instructions</a> first. This
+            is a fresh-install script.
+          </p>
+          <pre tabindex="0" data-copy><code>set -o pipefail
+curl --proto '=https' --tlsv1.2 -fsSL https://strife.zip/scripts/mumble.sh | sudo bash</code></pre>
+          <p>
+            Downloads the official Mumble 1.5.915 image pinned by digest.
+            Creates <code>/opt/strife-mumble</code>, a Compose file, persistent
+            data, and separate random join/admin passwords. Publishes
+            <strong>64738/TCP and 64738/UDP on all interfaces</strong>, starts
+            the container with restart enabled, and checks local TLS readiness.
+            Docker-published ports can bypass UFW; use a provider firewall or
+            Docker-aware packet filtering. No SSH or firewall rules are edited.
+          </p>
+          <p>
+            An existing install directory, project, or occupied port causes a
+            stop before replacement. A failed first run retains its files for
+            <a href="/wiki/#recovery">inspection and recovery</a>. Re-running
+            does not reset passwords. Read them privately with
+            <code>sudo cat /opt/strife-mumble/mumble.env</code>; share only the
+            server password with friends.
+          </p>
+          <div class="docs-actions">
+            <a class="button button-primary" href="/scripts/mumble.sh" download
+              >Download mumble.sh ↓</a
+            ><a href="/scripts/mumble.sh">Read script</a>
+          </div>
+        </section>
+        <section id="helltube">
+          <h2>02 / Helltube + nginx + HTTPS</h2>
+          <p>
+            <strong>Target:</strong> dedicated Ubuntu 26.04 x86_64 or ARM64 with
+            systemd and an interactive SSH terminal. The upstream installer was
+            designed for an Ubuntu LXC; a VPS must provide the same
+            systemd/network prerequisites. A fresh full VM is the simplest host.
+            Ubuntu 24.04, Debian, Fedora, Windows and macOS use the
+            <a href="/wiki/#manual-helltube">manual route</a>.
+          </p>
+          <pre tabindex="0" data-copy><code>set -o pipefail
+curl --proto '=https' --tlsv1.2 -fsSL https://strife.zip/scripts/helltube.sh | sudo bash</code></pre>
+          <p>
+            Have a DNS-only backend hostname, Let's Encrypt email, and a
+            Cloudflare token scoped to your zone with
+            <strong>DNS:Edit</strong> and <strong>Zone:Read</strong> ready. DNS
+            must be hosted on Cloudflare for this installer's DNS-01 flow. The
+            manual Caddy route works with other DNS providers.
+          </p>
+          <p>
+            The launcher downloads Helltube revision
+            <a
+              href="https://github.com/M-ax/helltube/tree/b8edab6a0faca32fdddadc1ccfbba74444f7d8bf"
+              >b8edab6a0faca32fdddadc1ccfbba74444f7d8bf</a
+            >, verifies archive SHA-256
+            <code
+              >c17e3e90309fb1843d331d2bd43dc6e68e33a464c114fe5bb0289fc3310efc38</code
+            >, then runs that checkout's installer with input from
+            <code>/dev/tty</code>. Interactive answers never come from the pipe.
+          </p>
+          <p>
+            The upstream script installs Node/media dependencies, nginx,
+            Certbot, an unprivileged Helltube service, persistent storage,
+            protected credentials, and TLS renewal. It replaces seeded passwords
+            before startup. It offers optional YouTube cookies, WireGuard
+            routing, and automatic updates; leave these unused for the first
+            deployment. Opting into updates later follows upstream
+            <code>main</code>, outside this initial pin.
+          </p>
+          <p>
+            <strong
+              >Reruns replace managed nginx, service and environment
+              configuration.</strong
+            >
+            Back up first. The launcher does not roll back a failed upstream
+            install. Retrieve the initial admin password privately with
+            <code>sudo cat /etc/helltube/.secrets/admin-password</code>. Public
+            desktop media still needs the
+            <a href="/wiki/#screen-sharing">44444/TCP+UDP configuration</a>.
+          </p>
+          <div class="docs-actions">
+            <a
+              class="button button-primary"
+              href="/scripts/helltube.sh"
+              download
+              >Download helltube.sh ↓</a
+            ><a href="/scripts/helltube.sh">Read launcher</a
+            ><a
+              href="https://github.com/M-ax/helltube/blob/b8edab6a0faca32fdddadc1ccfbba74444f7d8bf/scripts/bootstrap-ubuntu.sh"
+              >Read upstream installer</a
+            >
+          </div>
+        </section>
+        <section id="doctor">
+          <h2>03 / Is it actually reachable?</h2>
+          <p>
+            <strong>Target:</strong> Linux or macOS, from your laptop or server.
+            Replace both hostnames. Requires curl; the voice check also needs
+            OpenSSL and <code>timeout</code> (macOS:
+            <code>brew install coreutils</code> supplies <code>gtimeout</code>).
+          </p>
+          <pre tabindex="0" data-copy><code>set -o pipefail
+curl --proto '=https' --tlsv1.2 -fsSL https://strife.zip/scripts/doctor.sh | bash -s -- voice.example.com watch.example.com</code></pre>
+          <p>
+            Reads relevant listeners and DNS; probes Mumble TLS, Helltube HTTPS
+            health, and the external internal-route block. Failed probes exit
+            nonzero; unavailable optional tools are labeled SKIP. It changes no
+            files or settings and reads no credential files. TLS reachability
+            does not verify the Mumble certificate or UDP delivery. Finish with
+            the <a href="/wiki/#verify">two-client acceptance test</a>.
+          </p>
+          <div class="docs-actions">
+            <a class="button button-primary" href="/scripts/doctor.sh" download
+              >Download doctor.sh ↓</a
+            ><a href="/scripts/doctor.sh">Read script</a>
+          </div>
+        </section>
+        <section id="inspect">
+          <h2>Download, inspect, then run</h2>
+          <p>
+            This downloads all three files and checks them against the published
+            <a href="/scripts/SHA256SUMS" download>SHA256SUMS</a>. Checksums
+            fetched from the same website detect corrupt or mismatched
+            downloads; they are not an independent signature or a substitute for
+            trusting the publisher. The first two scripts are intended to run as
+            root only on their supported server platforms.
+          </p>
+          <pre tabindex="0" data-copy><code>mkdir strife-scripts
+cd strife-scripts
+for file in mumble.sh helltube.sh doctor.sh SHA256SUMS; do
+  curl --proto '=https' --tlsv1.2 -fSLO "https://strife.zip/scripts/$file" || exit 1
+done
+sha256sum -c SHA256SUMS || exit 1  # macOS: shasum -a 256 -c SHA256SUMS || exit 1
+less mumble.sh
+bash mumble.sh --help
+# After reading it, on your Linux server:
+sudo bash mumble.sh</code></pre>
+          <p>
+            All bootstrap scripts are versioned alongside this website in
+            <a
+              href="https://github.com/M-ax/strife-web/tree/main/public/scripts"
+              >strife-web source</a
+            >. Downloads become available when this site revision is deployed.
+            Infrastructure provisioning, real certificates, and remote media
+            playback must be verified on your own host.
+          </p>
+        </section>
+      </div>
+    </main>
+    <footer class="docs-footer wrap">
+      <a href="/">Strife home</a><a href="/wiki/">Read the full wiki</a
+      ><a href="https://github.com/M-ax/strife-web/issues"
+        >Report a docs or script issue ↗</a
+      >
+    </footer>
+  </body>
+</html>

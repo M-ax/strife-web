@@ -2,6 +2,26 @@
 
 Landing and download page for **Strife**, served by a Cloudflare Worker at **https://strife.zip**.
 
+## Getting started wiki and server scripts
+
+The public [getting-started wiki](https://strife.zip/wiki/) covers VPS selection, OS trade-offs, SSH, DNS/firewalls, Mumble, Helltube, Caddy/nginx, WebRTC, desktop installation, backups, upgrades, and recovery. Its static source is [public/wiki/index.html](public/wiki/index.html); it remains readable without JavaScript. The landing navigation and FAQ link to it.
+
+The [script download page](https://strife.zip/scripts/) includes copyable curl-to-Bash commands, requirements and side effects, source links, downloads, and SHA-256 checksums:
+
+- `mumble.sh`: fresh Linux Docker/Compose installation, pinned official image, private generated credentials and persistent data. Refuses existing installs; Docker/Compose must already be installed.
+- `helltube.sh`: Ubuntu 26.04/systemd launcher for the complete checksum-verified upstream checkout at `b8edab6a0faca32fdddadc1ccfbba74444f7d8bf`. Requires a controlling terminal and Cloudflare DNS credentials. Prompts use `/dev/tty`; the pipe carries only script code.
+- `doctor.sh`: read-only listener/DNS/TLS/HTTP diagnostics. No root required.
+
+After changing a public shell script, run `npm run scripts:checksums`; the build rejects stale checksums or CRLF shell scripts. Downloads are static text assets under `public/scripts`, with LF enforced by `.gitattributes`. Do not run the installation scripts on the development host.
+
+Validate installation boundaries using a disposable container (no Docker socket, production credentials or host-system directories are mounted):
+
+```powershell
+docker run --rm --mount "type=bind,source=$($PWD.Path),target=/work,readonly" ubuntu:24.04 bash /work/tests/bootstrap.test.sh
+```
+
+On Linux/macOS replace the mount argument with `"type=bind,source=$PWD,target=/work,readonly"`. This fixture mocks external services and checks pipe execution, preflight refusals, file/secret permissions, port mappings, SELinux labeling, rerun preservation, failure recovery, corrupt-source rejection/cleanup, and diagnostic failures. It does not perform a real Helltube deployment. `npm run test:mumble` pulls the pinned official image and tests real TCP/TLS and UDP in a disposable container on random loopback-only ports, then removes it. With the local web server running, `npm run test:docs` checks the wiki/download pages, responsive layout, WCAG, clipboard, links, no-JS access, script bytes/checksums and real download responses. Production DNS/TLS, OS provisioning, and media acceptance tests require a disposable live host.
+
 The site uses static HTML/CSS, self-hosted fonts, and a small JavaScript enhancement. The Worker streams Windows, Linux, and macOS downloads from the private R2 bucket **strife-releases**, bound as **RELEASES** in wrangler.jsonc. No production credentials are committed.
 
 ## Local development
@@ -26,13 +46,26 @@ Build and test the app on each native target using the neighboring Strife reposi
 
 Import the complete set without repacking the native archives:
 
-    node scripts/import-release.mjs ../strife/artifacts/release 0.1.0-preview.2
+    node scripts/import-release.mjs ../strife/artifacts/release 0.1.0-preview.2 build/release-0.1.0-preview.2
 
 PowerShell callers can also use:
 
-    ./scripts/package-release.ps1 -SourceDirectory ../strife/artifacts/release -Version 0.1.0-preview.2
+    ./scripts/package-release.ps1 -SourceDirectory ../strife/artifacts/release -Version 0.1.0-preview.2 -SourceRef build/release-0.1.0-preview.2
 
 The importer checks all five packages, copies them to releases, and writes per-file sizes and SHA-256 hashes to release.json and adjacent checksum files. Existing versioned files with different bytes are rejected. Choose a new version for every new build: R2 keys are immutable release locations of the form releases/VERSION/FILENAME, so resuming a download cannot mix builds.
+
+Supply the Strife commit, tag, or branch used to build the packages as `SOURCE_REF` (`-SourceRef` in PowerShell); prefer an immutable commit or release tag. New versions require it. Reimporting the same version preserves the existing source ref when omitted. The importer records it in `release.json` and updates the website's marked build references, including wiki versions, command filenames, and source-documentation links.
+
+### Refresh website and wiki references
+
+`release.json` is the single source for the advertised build. After editing it directly, run:
+
+    npm run release:docs
+    npm run release:docs:check
+
+The first command refreshes all marked references in HTML beneath `public/`, including nested wiki pages. The second checks without writing; stale or unmarked references fail `npm run check`, builds, and the `npm run deploy` preflight. Both commands work offline and require no release archives. Commit the manifest and updated HTML together. See [AGENTS.md](AGENTS.md) for the marker syntax when adding pages or examples.
+
+Review platform requirements, signing status, and setup instructions against the chosen build separately. The updater leaves other software versions and the wiki's **Last reviewed** date alone; changing filenames does not certify the instructions for a new release. It does not verify that a source ref exists upstream, upload archives, or deploy the site.
 
 The Windows installer is unsigned. macOS builds are ad-hoc signed and not notarized; downloaded builds may need approval in Privacy & Security. These limitations are shown on the download cards.
 
@@ -47,7 +80,7 @@ With the development server running:
 
     npm run test:browser
 
-The build checks TypeScript and runs a Wrangler deployment dry run. Unit tests cover per-platform availability, headers, checksums, cache validators, byte ranges, and object replacement/failure handling. Browser tests cover desktop/mobile layout, keyboard controls, WCAG A/AA, clipboard, a complete portable ZIP hash check, and each platform's real download routes. They use installed Chrome; STRIFE_TEST_BROWSER=msedge selects Edge. STRIFE_WEB_URL overrides the local test URL.
+The build checks TypeScript, script checksums, and release-reference freshness, then runs a Wrangler deployment dry run. Unit tests cover release-reference updates/imports, per-platform availability, headers, checksums, cache validators, byte ranges, and object replacement/failure handling. Browser tests cover desktop/mobile layout, keyboard controls, WCAG A/AA, clipboard, a complete portable ZIP hash check, and each platform's real download routes. They use installed Chrome; STRIFE_TEST_BROWSER=msedge selects Edge. STRIFE_WEB_URL overrides the local test URL.
 
 To publish, authenticate with `npx wrangler login`. The existing bucket is **strife-releases**; a new account would need `npx wrangler r2 bucket create strife-releases` once.
 
@@ -63,6 +96,8 @@ After deployment, check https://strife.zip/api/release: every downloads entry sh
 ## Files and routes
 
 - public/index.html, public/style.css, public/app.js: landing page, responsive download cards, preview controls, and checksums.
+- GET /wiki/: complete getting-started guide with static contents and copyable commands.
+- GET /scripts/: bootstrap download page; shell scripts and SHA256SUMS live beneath this route.
 - src/worker.ts: catalog API and streamed R2 downloads.
 - release.json: version, date, and an array of download metadata.
 - GET or HEAD /api/release: catalog with independent R2 availability for every package.

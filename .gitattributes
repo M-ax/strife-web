@@ -1,0 +1,3 @@
+public/scripts/*.sh text eol=lf
+public/scripts/SHA256SUMS text eol=lf
+tests/*.sh text eol=lf

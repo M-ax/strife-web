@@ -1,0 +1,2192 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#111113" />
+    <meta name="color-scheme" content="dark" />
+    <title>Getting started: the absurdly complete wiki | Strife</title>
+    <meta
+      name="description"
+      content="From choosing a VPS to your first Strife watch party: OS choices, Windows/Linux/macOS setup, Mumble, Helltube, DNS, firewalls, reverse proxies, TLS, backups, and recovery."
+    />
+    <link rel="canonical" href="https://strife.zip/wiki/" />
+    <link rel="icon" href="/assets/favicon.svg?v=orange-mark" />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/wiki/wiki.css" />
+    <script type="module" src="/wiki/wiki.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header docs-header wrap">
+      <a class="brand" href="/" aria-label="Strife home"
+        ><img
+          src="/assets/mark.svg?v=orange-mark"
+          width="36"
+          height="36"
+          alt=""
+        />STRIFE.</a
+      >
+      <nav aria-label="Main navigation">
+        <a href="/wiki/" aria-current="page">Getting started wiki</a
+        ><a href="/scripts/">Server scripts</a
+        ><a href="/#download">Get Strife</a>
+      </nav>
+    </header>
+    <main id="main" class="wrap">
+      <div class="docs-hero" id="top">
+        <p class="eyebrow">THE WIKI / BRING YOUR OWN EVERYTHING</p>
+        <h1>From empty VPS<br />to “you coming on?”</h1>
+        <p class="lede">
+          The pathologically detailed getting-started procedure. Pick a server,
+          install the boring bits, connect the fun bits, and know how to fix it
+          when the boring bits get ideas.
+        </p>
+        <p>
+          Last reviewed: <time datetime="2026-09-27">27 September 2026</time>.
+          Client baseline: Strife
+          <!-- release:version -->0.1.0-preview.2<!-- /release -->. Examples use
+          <code>voice.example.com</code>, <code>watch.example.com</code>, and
+          the documentation-only IP <code>203.0.113.10</code>. Replace them with
+          your real values.
+        </p>
+        <div class="docs-actions">
+          <a class="button button-primary" href="/scripts/"
+            >Give me the scripts ↗</a
+          ><a href="#client">I'm joining someone else's server</a>
+        </div>
+      </div>
+      <div class="docs-layout">
+        <aside class="docs-toc">
+          <details open>
+            <summary>On this page</summary>
+            <nav aria-label="Wiki contents">
+              <ol>
+                <li><a href="#tldr">TL;DR and prerequisites</a></li>
+                <li><a href="#architecture">What runs where</a></li>
+                <li><a href="#vps">Choose a server / VPS</a></li>
+                <li><a href="#os">Choose an operating system</a></li>
+                <li><a href="#provision">Provision and SSH in</a></li>
+                <li><a href="#dns">DNS, ports, and NAT</a></li>
+                <li><a href="#os-setup">Prepare each server OS</a></li>
+                <li><a href="#docker">Install Docker per OS</a></li>
+                <li><a href="#mumble">Install and administer Mumble</a></li>
+                <li><a href="#helltube">Ubuntu Helltube quick-start</a></li>
+                <li><a href="#manual-helltube">Manual Helltube install</a></li>
+                <li><a href="#proxy">Caddy / nginx / Cloudflare</a></li>
+                <li><a href="#screen-sharing">Screen sharing and TURN</a></li>
+                <li><a href="#client">Windows / Linux / Mac clients</a></li>
+                <li><a href="#connect">Connect, accounts, permissions</a></li>
+                <li><a href="#verify">Acceptance tests</a></li>
+                <li><a href="#operations">Backups and maintenance</a></li>
+                <li><a href="#upgrades">Upgrades and rollback</a></li>
+                <li><a href="#recovery">Troubleshooting and removal</a></li>
+                <li><a href="#sources">Sources and support boundaries</a></li>
+              </ol>
+            </nav>
+          </details>
+        </aside>
+        <article class="docs-article" aria-label="Getting started guide">
+          <section id="tldr">
+            <h2>01 / TL;DR, with just enough context</h2>
+            <p>
+              <strong>Joining friends?</strong> Download Strife for your
+              computer, get their Mumble hostname, port, join password, and
+              Helltube HTTPS URL, then follow
+              <a href="#client">client setup</a>. You do not need a VPS, Docker,
+              or an administrator account.
+            </p>
+            <p>
+              <strong>Hosting everything?</strong> Our preferred fresh-server
+              path is a dedicated Ubuntu 26.04 LTS x86_64 VM, a public IPv4
+              address, a domain, Docker for Mumble, and the upstream Helltube
+              installer for the video service. Start around 4 vCPU / 8 GB RAM /
+              80 GB SSD if you intend to transcode video. That is a planning
+              estimate, not a measured capacity promise.
+            </p>
+            <ol>
+              <li>
+                Choose the region closest to your group; confirm sustained CPU
+                and outbound transfer costs before renting. Save access to the
+                provider's recovery console.
+              </li>
+              <li>
+                Create the VM with an SSH key. Update it, reboot if needed, and
+                verify a second SSH login before changing authentication.
+              </li>
+              <li>
+                Create DNS-only <code>voice</code> and <code>watch</code> A
+                records. Allow your SSH port from your IP, 80/443 TCP for web,
+                and 64738 TCP+UDP for voice in the provider firewall.
+              </li>
+              <li>
+                Install Docker using the
+                <a href="#docker">commands for your OS</a>, then run the Mumble
+                script below.
+              </li>
+              <li>
+                On Ubuntu 26.04, prepare a scoped Cloudflare DNS token and run
+                the Helltube launcher. Choose the single-server arrangement by
+                leaving the separate frontend origin blank.
+              </li>
+              <li>
+                Retrieve the generated passwords privately. Change the Helltube
+                admin password, create ordinary accounts, register a Mumble
+                identity, and check channel permissions.
+              </li>
+              <li>
+                For desktop sharing, configure and open 44444 TCP+UDP
+                separately. Test all features from a second network, reboot, and
+                take your first recoverable backup.
+              </li>
+            </ol>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code># In an interactive SSH session on the prepared server:
+set -o pipefail
+curl -fsSL https://strife.zip/scripts/mumble.sh | sudo bash
+# Ubuntu 26.04 + systemd; prompts use your SSH terminal:
+curl -fsSL https://strife.zip/scripts/helltube.sh | sudo bash</code></pre>
+            <p>
+              The <a href="/scripts/">script download page</a> explains
+              prerequisites, mutations, source pins, reruns, and checksums. No
+              cloud account credentials are needed for Mumble. Helltube's
+              automated certificate flow needs Cloudflare DNS credentials; the
+              manual Caddy route does not.
+            </p>
+          </section>
+          <section id="architecture">
+            <h2>02 / Know which machine you are touching</h2>
+            <p>
+              Strife is a desktop client. Installing it on your laptop does not
+              start a public server. Voice and channel chat use a normal Mumble
+              server (also called Murmur). Watch parties use a separate Helltube
+              server. They have separate accounts, storage, connection settings,
+              and operational lifecycles. A Mumble channel does not
+              automatically create or join a Helltube room.
+            </p>
+            <div class="docs-table" tabindex="0">
+              <table>
+                <caption>
+                  The single-server arrangement used below
+                </caption>
+                <thead>
+                  <tr>
+                    <th>Component</th>
+                    <th>Runs on</th>
+                    <th>Connections / data</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Strife desktop</td>
+                    <td>Each person's Windows, Linux, or Mac computer</td>
+                    <td>
+                      Microphone, speakers, native voice identity, local
+                      preferences; embeds Helltube through a private loopback
+                      proxy.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Mumble container</td>
+                    <td>Your VPS</td>
+                    <td>
+                      64738 TCP+UDP directly; persistent database,
+                      registrations, ACLs, server certificate.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>nginx or Caddy</td>
+                    <td>Your VPS</td>
+                    <td>
+                      Public HTTPS on 443; forwards web/API/WebSocket traffic to
+                      Helltube on 127.0.0.1:3000.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Helltube + FFmpeg + yt-dlp</td>
+                    <td>Your VPS</td>
+                    <td>
+                      Accounts, rooms, uploads, media processing and delivery;
+                      data directory and service environment must survive
+                      updates.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Desktop media relay</td>
+                    <td>Inside Helltube on the VPS</td>
+                    <td>
+                      Separate 44444 TCP+UDP listener for WebRTC. Its public
+                      address must be explicitly configured.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <pre
+              tabindex="0"
+            ><code>Your computer ── Mumble TCP + UDP :64738 ── voice server
+              ├─ HTTPS / WSS :443 ── nginx OR Caddy ── :3000 Helltube
+              └─ WebRTC UDP / TCP :44444 ── Helltube media relay</code></pre>
+            <p>
+              One VM can run both services. Separate VMs make sense when
+              transcoding starves voice, storage grows, or different people
+              maintain each service. You can also use someone else's Mumble
+              server and host only Helltube. This website's Cloudflare Worker
+              distributes the client; it is not your voice or video server.
+            </p>
+          </section>
+          <section id="vps">
+            <h2>03 / Server and VPS selection, excessively considered</h2>
+            <h3>Choose by workload, then by region</h3>
+            <p>
+              A small private voice group is relatively lightweight. Video
+              introduces sustained CPU, disk, and egress demand. A shared CPU
+              plan that feels fast during installation can throttle under a long
+              encode. Start with a plan you can resize, use a full VM with root
+              access and systemd, and choose a datacenter near most
+              participants. Try an hourly instance before making a long
+              commitment.
+            </p>
+            <div class="docs-table" tabindex="0">
+              <table>
+                <caption>
+                  Starting estimates to validate with your own media
+                </caption>
+                <thead>
+                  <tr>
+                    <th>Use</th>
+                    <th>Initial allocation</th>
+                    <th>Watch first</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Voice/chat for a small group</td>
+                    <td>1–2 vCPU, 1–2 GB RAM, 20 GB SSD</td>
+                    <td>Packet loss, latency, noisy neighbors, logs.</td>
+                  </tr>
+                  <tr>
+                    <td>Voice + light video experiments</td>
+                    <td>2–4 vCPU, 4 GB RAM, 40–80 GB SSD</td>
+                    <td>
+                      FFmpeg CPU, native build memory, upload quotas. Limit
+                      concurrent transcoders.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Regular group watch parties</td>
+                    <td>4+ sustained vCPU, 8 GB+ RAM, 80 GB+ SSD</td>
+                    <td>
+                      Encoding speed and network transfer. More rooms require
+                      measurement and scaling.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Heavy/multiple encodes</td>
+                    <td>Dedicated CPU or a dedicated machine</td>
+                    <td>
+                      Benchmark representative codecs/resolutions. A GPU only
+                      helps if your actual pipeline supports it.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p>
+              These are editorial starting points, not upstream hardware
+              guarantees. Keep room for OS updates, npm/native builds, temporary
+              media, logs, and backups. Helltube's default aggregate
+              uploaded-storage limit is 30 GiB; that does not include every byte
+              of OS/cache/build usage. Explicitly configure quotas for your disk
+              instead of letting the defaults choose your storage plan.
+            </p>
+            <h3>Transfer is the bill people forget</h3>
+            <p>
+              For relayed video, outbound traffic grows with viewers. A rough
+              decimal estimate is
+              <code>GB per hour = Mbps × viewers × 0.45</code>, before protocol
+              overhead. An 8 Mbps stream sent to 10 viewers is about 80 Mbps and
+              36 GB per hour. Twenty such hours is roughly 720 GB. Screen
+              sharing also fans out from your server. Leave headroom rather than
+              equating a nominal 100 Mbps port with a usable 100 Mbps media
+              budget.
+            </p>
+            <p>
+              Check included outbound transfer, overage rate, uplink speed,
+              regional pricing, CPU sharing, disk growth, IPv4 charges, snapshot
+              charges, and whether suspended instances still bill. A snapshot
+              stored in the same provider account is useful but is not an
+              independent backup. Verify acceptable-use terms for your intended
+              traffic and media.
+            </p>
+            <h3>A provider shortlist without made-up prices</h3>
+            <p>
+              <a href="https://docs.hetzner.com/cloud/servers/overview/"
+                >Hetzner Cloud</a
+              >
+              and
+              <a href="https://docs.digitalocean.com/products/droplets/"
+                >DigitalOcean Droplets</a
+              >
+              are examples of general-purpose VPS products to compare, not
+              requirements or performance endorsements. Use the same region,
+              sustained CPU, RAM, SSD and transfer assumptions in each
+              provider's current calculator. Prefer accessible console recovery,
+              firewall controls, snapshots, predictable billing, and an image
+              you understand over saving a small amount on an obscure plan.
+            </p>
+            <h3>Home hosting, ARM, and containers</h3>
+            <p>
+              A spare machine is fine if it stays powered and your upload
+              connection can handle the group. Reserve its LAN IP, forward the
+              exact TCP and UDP ports, and test from cellular data.
+              Carrier-grade NAT means router forwarding alone will not create
+              public reachability; get a public address, use a VPS, or arrange a
+              VPN that carries the required protocols. Check double NAT between
+              an ISP modem and your router.
+            </p>
+            <p>
+              ARM64 can work for the pinned Mumble image and Helltube bootstrap.
+              x86_64 remains our default because native media dependency
+              compatibility is easier to compare. The Linux Strife desktop
+              download is x64 only; that does not prevent your server being ARM.
+              Avoid a tiny 32-bit board for video. LXC needs systemd and the
+              appropriate nesting/network permissions; Docker and optional
+              WireGuard may require host configuration. A full VM avoids that
+              extra host/container boundary.
+            </p>
+          </section>
+          <section id="os">
+            <h2>04 / Pick your operating system on purpose</h2>
+            <div class="docs-table" tabindex="0">
+              <table>
+                <caption>
+                  Host choices and the route this guide provides
+                </caption>
+                <thead>
+                  <tr>
+                    <th>OS</th>
+                    <th>Preference / trade-off</th>
+                    <th>Use this path</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Ubuntu 26.04 LTS</td>
+                    <td>
+                      Preferred for a fresh full stack: matches Helltube's
+                      upstream automation.
+                    </td>
+                    <td>OS prep → Docker → Mumble script → Helltube script.</td>
+                  </tr>
+                  <tr>
+                    <td>Ubuntu 24.04 LTS</td>
+                    <td>
+                      Good existing host; also the desktop Linux package
+                      baseline. Do not change OS just to silence an installer
+                      check.
+                    </td>
+                    <td>
+                      OS prep → Docker/Mumble → manual Helltube/systemd + Caddy.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Debian 13</td>
+                    <td>
+                      Good minimal server if you want to own configuration.
+                      Stock Node may be below Helltube's requirement.
+                    </td>
+                    <td>
+                      Debian packages → Docker/Mumble → explicit Node 24 and
+                      manual Helltube.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Debian 12</td>
+                    <td>
+                      Existing installations can use the same manual path while
+                      supported; prefer 13 for a new VM.
+                    </td>
+                    <td>
+                      Check lifecycle, install current Node, follow Debian
+                      branch below.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Fedora 43/44</td>
+                    <td>
+                      Suitable for experienced Fedora operators; faster release
+                      cadence and SELinux/codec differences mean more
+                      maintenance.
+                    </td>
+                    <td>
+                      Fedora prep and Docker; manual Helltube only after
+                      confirming codecs, SELinux access and native builds.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Windows / macOS</td>
+                    <td>
+                      First-class Strife clients. Useful Helltube local
+                      development hosts; avoid tying your friends' uptime to a
+                      sleeping laptop.
+                    </td>
+                    <td>
+                      Native client instructions; local Helltube instructions
+                      below; a Linux VM for always-on hosting.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Rocky / Alma / RHEL / Arch / Alpine / BSD</td>
+                    <td>
+                      Not covered by the bootstrap contracts. Alpine's libc and
+                      other native dependencies add work.
+                    </td>
+                    <td>
+                      Choose a supported Linux VM, or follow each upstream's
+                      platform documentation and maintain your own service
+                      packaging.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p>
+              LTS does not mean never update. Check
+              <a href="https://ubuntu.com/about/release-cycle"
+                >Ubuntu's support schedule</a
+              >
+              and
+              <a href="https://www.debian.org/releases/"
+                >Debian's release status</a
+              >
+              before provisioning. Fedora operators should plan release
+              upgrades. The scripts reject unsupported platforms; editing their
+              OS checks does not make an unsupported installation supported.
+            </p>
+          </section>
+          <section id="provision">
+            <h2>05 / Provision it and keep a way back in</h2>
+            <ol>
+              <li>
+                Create your provider account, enable MFA, save recovery codes,
+                set billing alerts, and choose a region/size. Turn on provider
+                backups if desired, but plan an off-host copy too.
+              </li>
+              <li>
+                On your own computer, create an SSH key if you do not have one.
+                Give it a passphrase. Upload only the public
+                <code>.pub</code> file to the provider; the private key stays on
+                your computer.
+              </li>
+              <li>
+                Select your OS image and key, attach a provider firewall, and
+                create the instance. Record its address, initial login user,
+                disk layout, and recovery-console procedure.
+              </li>
+              <li>
+                Compare the first SSH host-key fingerprint with the
+                console/provider's trusted information. A rebuild legitimately
+                changes it; an unexpected change needs investigation.
+              </li>
+            </ol>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code># Linux/macOS terminal, or Windows PowerShell with OpenSSH:
+ssh-keygen -t ed25519 -C "strife-admin"
+ssh root@203.0.113.10
+# Some images use ubuntu, debian, or another provider-specified login instead.</code></pre>
+            <p>
+              To display your public key: Linux/macOS use
+              <code>cat ~/.ssh/id_ed25519.pub</code>; PowerShell uses
+              <code>Get-Content "$env:USERPROFILE\.ssh\id_ed25519.pub"</code>.
+              Do not overwrite an existing key when prompted. If your image
+              lacks sudo, use the root console to install it before running sudo
+              examples.
+            </p>
+            <p>
+              On Ubuntu/Debian, create a day-to-day administrator with
+              <code>sudo adduser operator</code> and
+              <code>sudo usermod -aG sudo operator</code>. Install your public
+              key in that user's <code>~/.ssh/authorized_keys</code>, with the
+              directory mode 700, file mode 600, and ownership belonging to that
+              user. Fedora uses <code>sudo useradd -m operator</code>,
+              <code>sudo passwd operator</code>, and group <code>wheel</code>.
+              Test <code>ssh operator@203.0.113.10</code> and
+              <code>sudo -v</code> in a second terminal.
+            </p>
+            <p>
+              Only after that test should you consider disabling root/password
+              SSH login. Use an sshd configuration drop-in, verify the effective
+              values with <code>sudo sshd -T</code> and syntax with
+              <code>sudo sshd -t</code>, then reload the actual SSH service
+              (Ubuntu/Debian <code>ssh</code>, Fedora <code>sshd</code>). Cloud
+              images can have earlier drop-ins that take precedence. Keep the
+              original session open until the new login works. Do not change the
+              SSH port and firewall simultaneously without console access.
+            </p>
+          </section>
+          <section id="dns">
+            <h2>06 / DNS, ports, firewalls, and the router</h2>
+            <p>
+              In your domain's authoritative DNS zone, create
+              <code>voice.example.com → 203.0.113.10</code> and
+              <code>watch.example.com → 203.0.113.10</code> as A records. They
+              may point at different servers if you split services. Use DNS-only
+              records initially. An A record is IPv4; an AAAA record is IPv6.
+              Publish AAAA only after verifying the service, proxy, routing, and
+              both firewall layers over IPv6. A stale AAAA record can break
+              certificates and half your clients while IPv4 looks perfect.
+            </p>
+            <div class="docs-table" tabindex="0">
+              <table>
+                <caption>
+                  Inbound access for the single-host deployment
+                </caption>
+                <thead>
+                  <tr>
+                    <th>Port / protocol</th>
+                    <th>Purpose</th>
+                    <th>Exposure</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>22/TCP (or your SSH port)</td>
+                    <td>Administration</td>
+                    <td>Your admin IP/VPN range. Keep recovery access.</td>
+                  </tr>
+                  <tr>
+                    <td>80/TCP</td>
+                    <td>HTTP redirect / HTTP-01 ACME</td>
+                    <td>
+                      Public for the Caddy route. DNS-01 issuance itself does
+                      not require it.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>443/TCP</td>
+                    <td>Helltube HTTPS and WSS</td>
+                    <td>
+                      Public. Optional 443/UDP is HTTP/3, not Mumble or desktop
+                      media.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>64738/TCP and 64738/UDP</td>
+                    <td>Mumble control and voice</td>
+                    <td>
+                      Participants; public if your group joins from changing
+                      networks.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>44444/UDP and 44444/TCP</td>
+                    <td>Helltube desktop media</td>
+                    <td>
+                      Participants, only when configured for screen sharing.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>3000/TCP</td>
+                    <td>Node web backend</td>
+                    <td>
+                      Loopback only. Never add a public rule for this setup.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>6502 / database / Docker API</td>
+                    <td>Administrative internals</td>
+                    <td>
+                      No public exposure. The supplied Compose file does not
+                      publish these.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p>
+              Packets must pass <strong>every</strong> layer: provider security
+              group, VPS firewall, router/NAT if present, and service listener.
+              Allow outbound DNS, HTTPS, time synchronization, and the media
+              sources you use. A provider allowing TCP alone is not sufficient
+              for voice or WebRTC. A TCP port check cannot prove UDP delivery.
+            </p>
+            <h3>Ubuntu / Debian host firewall</h3>
+            <p>
+              On a fresh host, after installing UFW, substitute your actual
+              admin IP and SSH port. Keep a second SSH session and the recovery
+              console available. Check
+              <code>sudo ufw status verbose</code> before enabling an existing
+              firewall; merge with its rules instead of resetting it.
+            </p>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>sudo ufw allow from YOUR_ADMIN_PUBLIC_IP to any port 22 proto tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw allow 64738/tcp
+sudo ufw allow 64738/udp
+# Add these when enabling remote desktop sharing:
+sudo ufw allow 44444/tcp
+sudo ufw allow 44444/udp
+sudo ufw enable
+sudo ufw status verbose</code></pre>
+            <p>
+              <strong>Docker changes packet filtering.</strong> Published
+              container ports can bypass ordinary UFW rules. Apply the intended
+              Mumble restrictions in the provider firewall or Docker's
+              documented packet-filtering path, and test from outside. Do not
+              disable Docker's firewall integration to try to fix this. See
+              <a
+                href="https://docs.docker.com/engine/network/packet-filtering-firewalls/"
+                >Docker firewall behavior</a
+              >.
+            </p>
+            <h3>Fedora host firewall</h3>
+            <p>
+              Use <code>sudo firewall-cmd --get-active-zones</code> to find the
+              zone attached to your external interface. The example assumes
+              <code>public</code>; substitute if different. Keep SSH allowed and
+              use the provider firewall to restrict its source address.
+            </p>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>sudo firewall-cmd --permanent --zone=public --add-service=ssh
+sudo firewall-cmd --permanent --zone=public --add-service=http
+sudo firewall-cmd --permanent --zone=public --add-service=https
+sudo firewall-cmd --permanent --zone=public --add-port=64738/tcp
+sudo firewall-cmd --permanent --zone=public --add-port=64738/udp
+sudo firewall-cmd --permanent --zone=public --add-port=44444/tcp
+sudo firewall-cmd --permanent --zone=public --add-port=44444/udp
+sudo firewall-cmd --reload
+sudo firewall-cmd --zone=public --list-all</code></pre>
+            <p>
+              At home, reserve the server's LAN address and forward each listed
+              protocol to it. Do not forward 3000. Test from a phone hotspot:
+              router hairpin NAT can make the public hostname fail locally even
+              when it works outside. If only LAN clients fail, use split DNS
+              pointing the same hostname to the LAN address. Retain the public
+              hostname for certificate validation.
+            </p>
+          </section>
+          <section id="os-setup">
+            <h2>07 / Prepare the host, per OS</h2>
+            <h3>Ubuntu 26.04 or 24.04</h3>
+            <pre tabindex="0" data-copy><code>sudo apt-get update
+sudo apt-get upgrade -y
+sudo apt-get install -y ca-certificates curl openssl git iproute2 ufw
+cat /etc/os-release
+uname -m
+timedatectl status
+df -h
+free -h</code></pre>
+            <p>
+              If a reboot is required, run <code>sudo reboot</code>, reconnect,
+              and confirm the new kernel and SSH access. Correct time matters
+              for TLS. For Helltube on 26.04, the upstream installer supplies
+              its build/media packages; proceed to Docker. On 24.04, install the
+              manual Helltube dependencies below.
+            </p>
+            <h3>Debian 13 or an existing Debian 12 host</h3>
+            <p>
+              For a minimal image, use <code>su -</code> or the root console to
+              install sudo and grant your operator access first. Then run the
+              same apt update/base-package commands as Ubuntu. Debian does not
+              have Ubuntu's Universe repository; do not add Ubuntu repositories
+              to Debian. Confirm the distribution ID before configuring Docker's
+              apt source.
+            </p>
+            <h3>Fedora 43/44</h3>
+            <pre tabindex="0" data-copy><code>sudo dnf upgrade --refresh -y
+sudo dnf install -y ca-certificates curl openssl git iproute firewalld
+sudo systemctl enable --now firewalld
+cat /etc/os-release
+getenforce
+timedatectl status</code></pre>
+            <p>
+              Reboot after kernel updates. Keep SELinux enforcing and inspect
+              denials if a service cannot access its files. The Mumble script
+              detects enabled SELinux with <code>getenforce</code> and adds
+              <code>:Z</code> to its own data bind mount. Do not relabel
+              arbitrary system directories or disable SELinux globally.
+            </p>
+            <h3>Windows or macOS hosting</h3>
+            <p>
+              For always-on service, provision a Linux VM and follow its Linux
+              instructions over SSH. A local Ubuntu 26.04 VM also works if you
+              configure bridged/NAT networking and keep the host awake. WSL2 is
+              useful for development, but its virtual networking, UDP forwarding
+              and lifecycle are additional work; a PowerShell TCP forwarding
+              rule does not forward Mumble UDP. The downloadable bootstrap
+              scripts target a Linux server, not Git Bash or native macOS.
+            </p>
+            <p>
+              For a single-computer Helltube experiment, see
+              <a href="#local-helltube">native Windows/macOS instructions</a>. A
+              local server at 127.0.0.1 is reachable only from that computer.
+              Installing the Strife client is a separate operation.
+            </p>
+          </section>
+          <section id="docker">
+            <h2>08 / Install Docker for the Mumble script</h2>
+            <p>
+              Skip installation if your local Docker Engine and
+              <code>docker compose version</code> already work. These commands
+              assume a fresh server without competing Docker/containerd
+              packages. If the host already runs containers, inspect package
+              ownership and the upstream migration instructions before changing
+              its engine. Keep using <code>sudo docker</code>; membership in the
+              docker group grants extensive control over the host.
+            </p>
+            <h3>Ubuntu and Debian: official apt repository</h3>
+            <p>
+              Run the following in Bash. It reads your distribution and codename
+              instead of accidentally installing Ubuntu packages on Debian. The
+              supported releases are documented in the
+              <a href="https://docs.docker.com/engine/install/ubuntu/"
+                >Ubuntu</a
+              >
+              and
+              <a href="https://docs.docker.com/engine/install/debian/"
+                >Debian</a
+              >
+              installation references.
+            </p>
+            <pre tabindex="0" data-copy><code>(
+  set -euo pipefail
+  . /etc/os-release
+  case "$ID" in ubuntu|debian) ;; *) echo 'Use the instructions for your OS'; exit 1;; esac
+  sudo install -m 0755 -d /etc/apt/keyrings
+  curl -fsSL "https://download.docker.com/linux/$ID/gpg" | sudo tee /etc/apt/keyrings/docker.asc &gt;/dev/null
+  sudo chmod a+r /etc/apt/keyrings/docker.asc
+  printf 'Types: deb\nURIs: https://download.docker.com/linux/%s\nSuites: %s\nComponents: stable\nArchitectures: %s\nSigned-By: /etc/apt/keyrings/docker.asc\n' \
+    "$ID" "${UBUNTU_CODENAME:-$VERSION_CODENAME}" "$(dpkg --print-architecture)" \
+    | sudo tee /etc/apt/sources.list.d/docker.sources &gt;/dev/null
+  sudo apt-get update
+  sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  sudo systemctl enable --now docker
+  sudo docker run --rm hello-world
+  sudo docker compose version
+)</code></pre>
+            <h3>Fedora: official RPM repository</h3>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>sudo dnf install -y dnf-plugins-core
+sudo dnf config-manager addrepo --from-repofile https://download.docker.com/linux/fedora/docker-ce.repo
+sudo dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo systemctl enable --now docker
+sudo docker run --rm hello-world
+sudo docker compose version</code></pre>
+            <p>
+              Verify the signing-key fingerprint against the
+              <a href="https://docs.docker.com/engine/install/fedora/"
+                >official Fedora instructions</a
+              >
+              when prompted. Docker-compatible Podman commands are not the same
+              runtime contract as this bootstrap. On Fedora, the script labels
+              its data mount for SELinux.
+            </p>
+          </section>
+          <section id="mumble">
+            <h2>09 / Mumble: voice, chat, and actual administration</h2>
+            <p>
+              Keep an existing working Mumble server if you have one. Strife
+              speaks the native protocol and needs no plugin. For a new one, run
+              <a href="/scripts/#mumble">mumble.sh</a> after Docker setup. It
+              pins the official multi-architecture image by digest, creates
+              persistent host storage, and generates separate administrator and
+              server-join passwords. See the
+              <a href="https://github.com/mumble-voip/mumble-docker"
+                >official image configuration reference</a
+              >
+              for additional settings.
+            </p>
+            <pre tabindex="0" data-copy><code>set -o pipefail
+curl -fsSL https://strife.zip/scripts/mumble.sh | sudo bash
+sudo docker compose --project-directory /opt/strife-mumble ps
+# Run privately; this output contains credentials:
+sudo cat /opt/strife-mumble/mumble.env</code></pre>
+            <p>
+              <code>MUMBLE_CONFIG_SERVER_PASSWORD</code> is the entry password
+              you may give your group. <code>MUMBLE_SUPERUSER_PASSWORD</code> is
+              administrative. Do not send the entire file to friends. On a first
+              connection, verify the server's certificate fingerprint through a
+              trusted channel. Mumble's generated certificate can be
+              self-signed; HTTPS working on your watch hostname does not change
+              the voice certificate.
+            </p>
+            <h3>Bootstrap permissions with the standard Mumble client</h3>
+            <ol>
+              <li>
+                Connect to the server as <code>SuperUser</code> with its
+                generated administrator password. Use the regular upstream
+                Mumble desktop client for full server/channel ACL administration
+                if Strife does not expose the control you need.
+              </li>
+              <li>
+                Connect your normal identity under an ordinary username,
+                register that identity, and use the administrator session to add
+                that registered user to the root channel's admin group.
+              </li>
+              <li>
+                Create your initial channels. Review inherited ACLs,
+                speaking/join permissions, and whether ordinary users may create
+                channels or register themselves. Test with a second non-admin
+                identity.
+              </li>
+              <li>
+                Disconnect SuperUser and use the registered everyday identity.
+                Export/back up its client certificate securely; a display name
+                alone does not preserve registration.
+              </li>
+            </ol>
+            <p>
+              Use
+              <code
+                >sudo docker compose --project-directory /opt/strife-mumble logs
+                --tail=100</code
+              >
+              for startup failures. Logs can contain connection information;
+              inspect before sharing. The script checks local TCP/TLS startup,
+              not public UDP or your channel ACLs. A Mumble client can tunnel
+              voice over TCP when UDP fails, but that can mask firewall mistakes
+              and increase sensitivity to packet loss.
+            </p>
+            <h3>Manual package alternative</h3>
+            <p>
+              On Debian/Ubuntu,
+              <code>sudo apt-get install mumble-server</code> is an alternative
+              to Docker, not an additional step. Inspect
+              <code>dpkg -L mumble-server</code> and
+              <code>systemctl cat mumble-server</code> for your package's actual
+              ini/data/unit paths. Common Debian packages use
+              <code>/etc/mumble-server.ini</code>; older binaries are named
+              <code>murmurd</code>. Configure port, join password, user limit
+              and persistent database, set SuperUser using that binary's
+              <code>--help</code> instructions, then enable its unit. Do not
+              start both versions on 64738. The current upstream binary's
+              options differ from older distribution builds; use the matching
+              <a href="https://www.mumble.info/documentation/mumble-server/"
+                >server documentation</a
+              >.
+            </p>
+          </section>
+          <section id="helltube">
+            <h2>10 / Helltube on Ubuntu 26.04: guided installation</h2>
+            <p>
+              Use a dedicated host or container with systemd. Resolve any
+              existing nginx/Caddy listener conflicts before proceeding. This
+              upstream installer configures nginx and Certbot, so skip the
+              manual proxy install afterward. It obtains certificates using
+              Cloudflare DNS-01 and therefore needs an authoritative
+              Cloudflare-hosted DNS zone.
+            </p>
+            <ol>
+              <li>
+                Create the DNS-only watch hostname and confirm it resolves to
+                your server.
+              </li>
+              <li>
+                Create a Cloudflare API token restricted to this zone with Zone
+                DNS Edit and Zone Read. Prepare an email address for certificate
+                notifications. A scoped token is preferable to a Global API Key.
+              </li>
+              <li>
+                Use an interactive SSH session (allocate a terminal with
+                <code>ssh -t</code> if necessary). Run the launcher. The
+                downloaded source revision and its hash are listed on the
+                <a href="/scripts/#helltube">download page</a>.
+              </li>
+              <li>
+                Enter your backend hostname. For this single-server guide, leave
+                the separate frontend HTTPS origin blank. That serves the
+                frontend and backend from the same public hostname.
+              </li>
+              <li>
+                Choose token authentication and enter the token at the hidden
+                prompt. Skip optional cookies and WireGuard initially. Leave
+                automatic backend updates disabled until you have backups and a
+                rollback procedure.
+              </li>
+              <li>
+                Wait for dependency installation, native builds, certificate
+                issuance, service startup and HTTPS checks. Keep the SSH session
+                connected and do not run two installers together.
+              </li>
+            </ol>
+            <pre tabindex="0" data-copy><code>set -o pipefail
+curl -fsSL https://strife.zip/scripts/helltube.sh | sudo bash
+sudo systemctl status helltube nginx certbot.timer --no-pager
+curl -fsS https://watch.example.com/api/health
+# Privately retrieve the initial password; change it after signing in:
+sudo cat /etc/helltube/.secrets/admin-password
+sudo certbot renew --cert-name helltube --dry-run</code></pre>
+            <p>
+              The app lives in <code>/opt/helltube/app</code>, persistent data
+              in <code>/var/lib/helltube</code>, and managed
+              configuration/secrets in <code>/etc/helltube</code>. The generated
+              password file records the initial password, not later changes.
+              Make ordinary accounts for everyday use and approve requests
+              through Helltube's user management.
+            </p>
+            <p>
+              Failure is a stop, not an automatic rollback. Read the last error
+              and <code>sudo journalctl -u helltube -n 100 --no-pager</code>.
+              Fix DNS/token scope, occupied ports, package failures, or
+              disk/memory shortages before retrying. Rerunning replaces managed
+              configuration while preserving data and non-default passwords.
+              Back up customizations first. The installer keeps port 3000 on
+              loopback; desktop media still needs the
+              <a href="#screen-sharing">separate setup</a>.
+            </p>
+          </section>
+          <section id="manual-helltube">
+            <h2>11 / Helltube manually: Ubuntu, Debian, Fedora</h2>
+            <p>
+              This is the alternative for another supported Linux environment,
+              another DNS provider, or an operator who wants to manage each
+              part. Do not layer it over the automated install. Examples target
+              a <strong>fresh host</strong>; stop if the user, app directory, or
+              service already exists and follow the upgrade procedure instead.
+              The baseline is Node 24, FFmpeg with libx264/AAC, yt-dlp with its
+              default dependencies, and one Helltube process.
+            </p>
+            <h3>Install build and media dependencies</h3>
+            <p>Ubuntu 24.04/26.04 and Debian 12/13:</p>
+            <pre tabindex="0" data-copy><code>sudo apt-get update
+sudo apt-get install -y ca-certificates curl git xz-utils build-essential \
+  python3 python3-venv python3-pip ffmpeg openssl
+# Ubuntu only: if ffmpeg is unavailable, enable Universe using
+# sudo add-apt-repository universe, then repeat apt-get update/install.</code></pre>
+            <p>Fedora:</p>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>sudo dnf install -y ca-certificates curl git xz gcc gcc-c++ make \
+  python3 python3-pip ffmpeg-free openssl</code></pre>
+            <p>
+              <a
+                href="https://packages.fedoraproject.org/pkgs/ffmpeg/ffmpeg-free/"
+                >Fedora's ffmpeg-free package</a
+              >
+              may not provide the encoders this pipeline needs. Run
+              <code>ffmpeg -hide_banner -encoders</code> and check for
+              <code>libx264</code> and <code>aac</code>. If missing, supply a
+              compatible FFmpeg build from a source you trust, or use the
+              Ubuntu/Debian host path. Do not treat successful package
+              installation as proof of codec availability. The
+              <a href="https://ffmpeg.org/download.html"
+                >FFmpeg download page</a
+              >
+              describes upstream distribution options.
+            </p>
+            <h3>Install a compatible system-wide Node</h3>
+            <p>
+              Check <code>node --version</code> and <code>npm --version</code>.
+              Helltube requires Node 22.13 or newer; we prefer the supported
+              Node 24 LTS line. A shell-only version manager can work
+              interactively but disappear from a systemd service's PATH. The
+              following installs the explicit Node 24.21.0 baseline from
+              nodejs.org without replacing existing symlinks. If you already
+              have a maintained Node 24 installation, use its absolute path in
+              the unit and skip this block. Review newer security patches in the
+              <a href="https://nodejs.org/en/about/previous-releases"
+                >Node release documentation</a
+              >
+              before a later deployment.
+            </p>
+            <pre tabindex="0" data-copy><code>(
+  set -euo pipefail
+  case "$(uname -m)" in x86_64) arch=x64;; aarch64) arch=arm64;; *) exit 1;; esac
+  version=v24.21.0
+  archive="node-$version-linux-$arch.tar.xz"
+  work=$(mktemp -d)
+  trap 'rm -rf -- "$work"' EXIT
+  cd "$work"
+  curl -fSLO "https://nodejs.org/dist/$version/$archive"
+  curl -fSLO "https://nodejs.org/dist/$version/SHASUMS256.txt"
+  awk -v name="$archive" '$2 == name' SHASUMS256.txt &gt; selected.sha256
+  test -s selected.sha256
+  sha256sum -c selected.sha256
+  sudo test ! -e "/opt/node-$version-linux-$arch"
+  sudo tar -xJf "$archive" -C /opt --no-same-owner
+  sudo ln -s "/opt/node-$version-linux-$arch/bin/node" /usr/local/bin/node
+  sudo ln -s "/opt/node-$version-linux-$arch/bin/npm" /usr/local/bin/npm
+)
+/usr/local/bin/node --version
+/usr/local/bin/npm --version</code></pre>
+            <p>
+              The archive checksum is fetched over HTTPS from the same
+              publisher. For independent signature verification, follow Node's
+              signed release-checksum procedure. Do not force-overwrite an
+              existing runtime used by other applications. If the symlink
+              creation stops, inspect the existing install and choose its
+              intended service path.
+            </p>
+            <h3>Create the service identity and build a pinned checkout</h3>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>sudo useradd --system --create-home --home-dir /var/lib/helltube --shell /usr/sbin/nologin helltube
+sudo install -d -o helltube -g helltube -m 750 /opt/helltube
+sudo install -d -o root -g root -m 700 /etc/helltube
+sudo -u helltube git clone https://github.com/M-ax/helltube.git /opt/helltube/app
+sudo -u helltube git -C /opt/helltube/app checkout --detach b8edab6a0faca32fdddadc1ccfbba74444f7d8bf
+sudo python3 -m venv /opt/helltube/tools
+sudo /opt/helltube/tools/bin/pip install --upgrade 'yt-dlp[default]'
+sudo -u helltube env PATH=/usr/local/bin:/usr/bin:/bin bash -c \
+  'cd /opt/helltube/app &amp;&amp; npm ci &amp;&amp; npm run build'
+sudo chown -R root:root /opt/helltube/app
+sudo chown root:helltube /opt/helltube
+sudo chmod 750 /opt/helltube
+sudo chmod 750 /var/lib/helltube</code></pre>
+            <p>
+              The build runs as an unprivileged account; the finished
+              application becomes root-owned while data stays writable by
+              Helltube. <code>npm ci</code> uses the lockfile, including the
+              native mediasoup worker installation. If a prebuilt worker is
+              unavailable, its build needs Python and a compiler. Resolve native
+              build errors before starting the service. Keep application and
+              data directories separate.
+            </p>
+            <h3>Replace seeded credentials before exposing the app</h3>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>sudo sh -c 'umask 077; openssl rand -hex 24 &gt; /etc/helltube/admin-password'
+sudo sh -c 'runuser -u helltube -- env DATA_DIR=/var/lib/helltube \
+  /usr/local/bin/node /opt/helltube/app/scripts/bootstrap-admin.mjs \
+  &lt; /etc/helltube/admin-password'
+# Read privately, sign in as admin after HTTPS is ready, then change it:
+sudo cat /etc/helltube/admin-password</code></pre>
+            <p>
+              The bootstrap helper changes seeded/default account credentials,
+              preserving existing non-default passwords. Do not put a password
+              in a shell command argument, service file, screenshot, or shared
+              terminal recording. If this step fails, keep the service stopped.
+            </p>
+            <h3>Configure the production environment</h3>
+            <p>
+              Use <code>sudoedit /etc/helltube/helltube.env</code> to create the
+              following. Substitute the real watch hostname. Units below
+              interpret these as environment assignments, not a shell script.
+              Keep the file root-owned and mode 600.
+            </p>
+            <pre tabindex="0" data-copy><code>NODE_ENV=production
+HOST=127.0.0.1
+PORT=3000
+DATA_DIR=/var/lib/helltube
+SECURE_COOKIES=true
+TRUST_PROXY=true
+ALLOWED_ORIGINS=https://watch.example.com
+FFMPEG_PATH=/usr/bin/ffmpeg
+YTDLP_PATH=/opt/helltube/tools/bin/yt-dlp
+MAX_TRANSCODERS=1
+MAX_STORAGE_BYTES=21474836480
+MAX_USER_STORAGE_BYTES=10737418240</code></pre>
+            <p>
+              The example caps concurrent transcoders at one and uploaded
+              storage at 20 GiB total / 10 GiB per user. Adjust deliberately for
+              your machine. Use the actual FFmpeg path if you installed a custom
+              build. <code>ALLOWED_ORIGINS</code> is an exact origin, with
+              scheme and no trailing slash; it is not a wildcard domain or a
+              room URL. Leave <code>BARE_METAL_ORIGIN</code> and
+              <code>EDGE_PROXY_SECRET</code> unset for this single-origin setup.
+              Secure cookies require HTTPS at the browser; direct public HTTP
+              logins will not work as a workaround.
+            </p>
+            <h3>Install the systemd unit</h3>
+            <p>
+              Create <code>/etc/systemd/system/helltube.service</code> with
+              <code>sudoedit</code>:
+            </p>
+            <pre tabindex="0" data-copy><code>[Unit]
+Description=Helltube watch parties
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=helltube
+Group=helltube
+WorkingDirectory=/opt/helltube/app
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+EnvironmentFile=/etc/helltube/helltube.env
+EnvironmentFile=-/etc/helltube/desktop.env
+ExecStart=/usr/local/bin/node /opt/helltube/app/server/main.js
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/helltube
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>sudo chmod 600 /etc/helltube/helltube.env
+sudo systemd-analyze verify /etc/systemd/system/helltube.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now helltube
+sudo systemctl status helltube --no-pager
+curl -fsS http://127.0.0.1:3000/api/health
+sudo ss -lntp 'sport = :3000'</code></pre>
+            <p>
+              Expect the HTTP listener on loopback and a successful health
+              response. Now add exactly one reverse proxy. On Fedora, inspect
+              <code>sudo ausearch -m AVC -ts recent</code> if SELinux denies
+              service execution, data access or proxy networking. Use
+              appropriate file labels and the distro's documented service
+              policy/booleans; do not switch enforcement off to hide a
+              permissions mistake.
+            </p>
+            <h3 id="local-helltube">
+              Native Windows and macOS: local experiment
+            </h3>
+            <p>
+              These foreground commands are for a local machine, not a
+              persistent public deployment. Install Git, a current Node 24 LTS,
+              FFmpeg with libx264/AAC, and current yt-dlp first. Windows may
+              need the C++/Python build tools if mediasoup has to compile; macOS
+              may need Xcode Command Line Tools. Check all tool versions in the
+              same terminal that will run npm.
+            </p>
+            <p>
+              Windows PowerShell (installers are interactive; reopen the
+              terminal after PATH changes):
+            </p>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>winget install --id OpenJS.NodeJS.LTS -e
+winget install --id Git.Git -e
+winget install --id Gyan.FFmpeg -e
+winget install --id yt-dlp.yt-dlp -e
+git clone https://github.com/M-ax/helltube.git
+Set-Location helltube
+git checkout --detach b8edab6a0faca32fdddadc1ccfbba74444f7d8bf
+npm ci
+npm run build
+$env:HOST = '127.0.0.1'
+$env:ALLOWED_ORIGINS = 'http://127.0.0.1:3000'
+npm start</code></pre>
+            <p>macOS, with Homebrew already installed:</p>
+            <pre tabindex="0" data-copy><code>xcode-select --install
+brew install node@24 ffmpeg yt-dlp git
+export PATH="$(brew --prefix node@24)/bin:$PATH"
+git clone https://github.com/M-ax/helltube.git
+cd helltube
+git checkout --detach b8edab6a0faca32fdddadc1ccfbba74444f7d8bf
+npm ci
+npm run build
+HOST=127.0.0.1 ALLOWED_ORIGINS=http://127.0.0.1:3000 npm start</code></pre>
+            <p>
+              Open <code>http://127.0.0.1:3000</code> locally. This native local
+              path uses upstream's seeded <code>admin</code> /
+              <code>garbageTime_</code> credentials; change the password
+              immediately in Account before any broader access. Stop with
+              Ctrl+C. Persistent state is in the checkout's
+              <code>data</code> directory unless you set <code>DATA_DIR</code>.
+              Do not expose the development server or seeded credentials to the
+              Internet. For persistent hosting, use the Linux service and HTTPS
+              procedure.
+            </p>
+          </section>
+          <section id="proxy">
+            <h2>12 / Reverse proxying without breaking half the app</h2>
+            <p>
+              Proxy Helltube's HTTP and WebSockets. Mumble and desktop WebRTC
+              use different protocols and listeners. Preserve Host, Origin,
+              cookies, range requests, and upgrade headers; do not add blanket
+              caching. Block <code>/internal</code> and its descendants outside
+              loopback. Serve the app at the root of its own hostname; this
+              guide does not configure a subdirectory deployment.
+            </p>
+            <h3>Caddy: our manual-install preference</h3>
+            <p>
+              Caddy automatically manages HTTPS and handles WebSocket upgrades
+              through <code>reverse_proxy</code>. DNS must resolve correctly and
+              the ACME challenge must reach the host. See
+              <a href="https://caddyserver.com/docs/automatic-https"
+                >automatic HTTPS</a
+              >
+              and
+              <a
+                href="https://caddyserver.com/docs/caddyfile/directives/reverse_proxy"
+                >reverse proxy behavior</a
+              >. Keep Caddy's persistent certificate storage across restarts.
+            </p>
+            <p>
+              On Ubuntu/Debian, install the distribution's
+              <code>caddy</code> package with
+              <code>sudo apt-get install caddy</code>, or use the
+              <a href="https://caddyserver.com/docs/install"
+                >official stable repository</a
+              >
+              if your distribution does not provide it. On Fedora, Caddy
+              documents <code>sudo dnf install dnf5-plugins</code>,
+              <code>sudo dnf copr enable @caddy/caddy</code>, then
+              <code>sudo dnf install caddy</code>. Do not start Caddy while
+              nginx already owns 80/443.
+            </p>
+            <p>
+              On a fresh Caddy install, edit <code>/etc/caddy/Caddyfile</code>.
+              On a shared proxy, add a site block and preserve its existing
+              sites. Substitute your real domain:
+            </p>
+            <pre tabindex="0" data-copy><code>watch.example.com {
+    @private path /internal /internal/*
+    handle @private {
+        respond 404
+    }
+    handle {
+        reverse_proxy 127.0.0.1:3000
+    }
+}</code></pre>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>sudo caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+sudo systemctl enable --now caddy
+sudo systemctl reload caddy
+curl -fsS https://watch.example.com/api/health
+curl -s -o /dev/null -w '%{http_code}\n' https://watch.example.com/internal</code></pre>
+            <p>
+              Expect health to return 200 and the private path 404. No
+              <code>tls_insecure_skip_verify</code>, wildcard CORS, cookie
+              stripping, or global frame-header removal is needed. Avoid access
+              logging full media URLs because they can contain access tokens. If
+              you enable logging, redact sensitive URLs and headers.
+            </p>
+            <h3>nginx: for an existing nginx host</h3>
+            <p>
+              The Ubuntu installer configures this already. For a manual nginx
+              deployment, install nginx and provision a browser-trusted
+              certificate with your ACME client first. For HTTP-01 issuance on a
+              fresh host, install
+              <code>nginx certbot python3-certbot-nginx</code> on Ubuntu/Debian,
+              create an HTTP server block for the hostname, then run
+              <code>sudo certbot --nginx -d watch.example.com</code>. Confirm
+              certificate paths from <code>sudo certbot certificates</code>. A
+              DNS-01 client/plugin is an alternative when HTTP-01 is
+              unavailable.
+            </p>
+            <p>
+              The following example belongs in an nginx file included from the
+              <code>http</code> context, such as
+              <code>/etc/nginx/conf.d/helltube.conf</code>. Replace the hostname
+              and certificate paths. The <code>map</code> must be outside the
+              server blocks. Remove duplicate blocks for this same hostname
+              after preserving a backup; do not overwrite unrelated sites.
+            </p>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>map $http_upgrade $helltube_upgrade {
+    default upgrade;
+    '' close;
+}
+server {
+    listen 80;
+    server_name watch.example.com;
+    return 301 https://$host$request_uri;
+}
+server {
+    listen 443 ssl;
+    server_name watch.example.com;
+    ssl_certificate /etc/letsencrypt/live/watch.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/watch.example.com/privkey.pem;
+    access_log off;
+    error_log /var/log/nginx/helltube-error.log crit;
+    client_max_body_size 2m;
+    location = /internal { return 404; }
+    location ^~ /internal/ { return 404; }
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header Origin $http_origin;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $helltube_upgrade;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_buffering off;
+        proxy_request_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
+    }
+}</code></pre>
+            <p>
+              Helltube uploads use 512 KiB chunks, so a 2 MiB per-request limit
+              does not restrict the total video to 2 MiB. Its own quotas still
+              apply. nginx requires explicit
+              <a href="https://nginx.org/en/docs/http/websocket.html"
+                >WebSocket upgrade handling</a
+              >. This example listens on IPv4; add and verify IPv6 listeners
+              before publishing AAAA. Error logging is deliberately restricted
+              to reduce sensitive URL logging; temporarily increased diagnostic
+              logs need careful handling.
+            </p>
+            <pre tabindex="0" data-copy><code>sudo nginx -t
+sudo systemctl enable --now nginx
+sudo systemctl reload nginx
+sudo certbot renew --dry-run
+curl -fsS https://watch.example.com/api/health</code></pre>
+            <p>
+              Confirm your ACME client has a renewal timer and a deploy hook
+              that tests/reloads nginx after renewal. Caddy handles its own
+              lifecycle. Do not run two independent certificate managers for the
+              same listener without a specific reason.
+            </p>
+            <h3>
+              Cloudflare DNS, reverse proxies, and the optional Worker split
+            </h3>
+            <p>
+              Use DNS-only for Mumble: Cloudflare's ordinary HTTP proxy does not
+              transport your 64738 TCP/UDP service. See its
+              <a
+                href="https://developers.cloudflare.com/fundamentals/reference/network-ports/"
+                >supported network ports</a
+              >. Start Helltube DNS-only as well. A tunnel does not
+              automatically carry its separate desktop media listener, and a
+              Cloudflare Origin CA certificate alone is not browser-trusted for
+              direct access.
+            </p>
+            <p>
+              Helltube also supports an optional Worker frontend plus a DNS-only
+              HTTPS metal backend. That is a separate, advanced deployment: set
+              matching <code>BARE_METAL_ORIGIN</code> in Worker and backend, the
+              exact frontend in <code>ALLOWED_ORIGINS</code>, and a matching
+              random <code>EDGE_PROXY_SECRET</code> through each system's secret
+              store. Keep backend <code>/internal/*</code> blocked, preserve
+              <code>X-Helltube-Edge</code>, and allow direct uploads/keys/media
+              to reach metal. Do not put the metal hostname behind Cloudflare
+              Tunnel or the ordinary orange-cloud proxy. Deploy matching
+              frontend/backend versions. Follow the
+              <a
+                href="https://github.com/M-ax/helltube#cloudflare-worker-frontend--bare-metal-backend"
+                >upstream split-deployment procedure</a
+              >
+              after the single-host setup is working.
+            </p>
+          </section>
+          <section id="screen-sharing">
+            <h2>13 / Desktop sharing: the second networking job</h2>
+            <p>
+              The default media bind is <code>127.0.0.1:44444</code>. Remote
+              participants cannot use it until you change it. HTTPS/WSS
+              establishes the session; WebRTC carries screen video/audio
+              directly between each browser and the Helltube relay. Neither
+              nginx nor the Worker carries those media packets.
+            </p>
+            <p>
+              For the managed Ubuntu install or the manual unit above, create
+              <code>/etc/helltube/desktop.env</code> with <code>sudoedit</code>.
+              Substitute the server's real reachable public IP. An explicit IPv4
+              avoids browser DNS differences for ICE candidates:
+            </p>
+            <pre tabindex="0" data-copy><code>DESKTOP_LISTEN_IP=0.0.0.0
+DESKTOP_ANNOUNCED_ADDRESS=203.0.113.10
+DESKTOP_PORT=44444
+DESKTOP_ICE_SERVERS=[]</code></pre>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>sudo chmod 600 /etc/helltube/desktop.env
+sudo systemctl restart helltube
+sudo ss -lntup 'sport = :44444'</code></pre>
+            <p>
+              Open 44444 UDP and TCP in the host/provider firewalls and forward
+              it through NAT using the same external port. The relay can
+              initialize when a desktop session starts; absence before use is
+              not by itself proof of failure. Test an actual share from another
+              network. A wildcard bind requires an announced address. Do not
+              announce 127.0.0.1 or a private LAN address to Internet users.
+            </p>
+            <p>
+              For restrictive client networks, deploy a separate TURN service
+              such as coturn. A typical design allows 3478 UDP/TCP, 5349 TCP for
+              TLS, and a deliberately configured relay-port range. It needs its
+              own DNS-only hostname, trusted certificate, authentication,
+              bandwidth budget and firewall rules. Configure Helltube's
+              <code>DESKTOP_ICE_SERVERS</code> and
+              <code>DESKTOP_TURN_SECRET</code> to match the relay. Never publish
+              the shared REST-auth secret in frontend code. STUN discovers
+              connectivity; it does not relay traffic when direct access is
+              blocked. See
+              <a
+                href="https://github.com/coturn/coturn/blob/master/README.turnserver"
+                >coturn configuration</a
+              >
+              and
+              <a
+                href="https://github.com/M-ax/helltube#metal-media-connectivity-and-turn"
+                >Helltube's TURN settings</a
+              >.
+            </p>
+            <p>
+              Screen capture additionally needs HTTPS/localhost, OS permission,
+              and a compatible browser/webview. Sound capture varies by OS and
+              selected window/tab. Test in an external browser to separate a
+              server connectivity problem from a desktop webview permission
+              problem.
+            </p>
+          </section>
+          <section id="client">
+            <h2>14 / Install Strife on each person's computer</h2>
+            <p>
+              Use the <a href="/#download">platform downloads</a> and their
+              published checksums. Select your computer's CPU architecture, not
+              the server's architecture. Packages include .NET and the native
+              voice engine; there is no need to install a second Mumble client
+              just to use Strife. You may still want upstream Mumble for
+              advanced administration.
+            </p>
+            <h3>Windows x64</h3>
+            <ol>
+              <li>
+                Use Windows 10 build 19041+ or Windows 11 on x64. Download the
+                setup EXE for the simplest installation. It includes the
+                WebView2 and Visual C++ prerequisites.
+              </li>
+              <li>
+                Verify the file's SHA-256 with the command below and compare it
+                with the platform card/checksum download. The installer is
+                currently unsigned, so Windows may show a publisher warning.
+                Confirm the source and checksum before choosing to run it.
+              </li>
+              <li>
+                Run setup, choose your installation options, and launch Strife
+                from the Start Menu. Allow microphone access under Windows
+                privacy settings.
+              </li>
+              <li>
+                For portable use, extract the complete ZIP to a writable
+                directory and launch Strife.exe. Keep the accompanying files
+                together. The portable package requires WebView2 and the VC++
+                x64 runtime already installed.
+              </li>
+            </ol>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code># PowerShell, in the directory containing your download:
+Get-FileHash .\<!-- release:filename:windows-x64 -->Strife-0.1.0-preview.2-win-x64-Setup.exe<!-- /release --> -Algorithm SHA256</code></pre>
+            <p>
+              If the UI is blank, check WebView2. If a native DLL is missing,
+              check the VC++ runtime and that the whole portable folder was
+              extracted. Install prerequisites from Microsoft or use the bundled
+              setup; do not fetch individual DLLs from random sites. Profiles
+              survive normal upgrades and uninstall.
+            </p>
+            <h3>Linux x64: Ubuntu 24.04 baseline</h3>
+            <p>
+              The shipped tarball targets Ubuntu 24.04 x64 with GTK 3, WebKitGTK
+              4.1 and audio/X11 libraries. Use a desktop session with an audio
+              device, not a headless VPS shell. Install these runtime packages
+              on Ubuntu 24.04:
+            </p>
+            <pre tabindex="0" data-copy><code>sudo apt-get update
+sudo apt-get install -y libgtk-3-0 libwebkit2gtk-4.1-0 libnotify4 libasound2t64 \
+  libsm6 libice6 libx11-xcb1 libxi6 libxrender1 libxcb-cursor0 \
+  libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 \
+  libxcb-xinerama0 libxcb-xkb1 libxkbcommon-x11-0 libgl1 libegl1
+# Download the archive and adjacent checksum from the platform card.
+sha256sum -c <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.2-linux-x64.tar.gz<!-- /release -->.sha256
+tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.2-linux-x64.tar.gz<!-- /release -->
+./Strife/Strife</code></pre>
+            <p>
+              Extract into a fresh directory when upgrading instead of mixing
+              old and new files. Newer Ubuntu/Debian desktops may work but
+              package names/ABI requirements must match; Fedora and other
+              distributions need their own equivalent libraries. The server's
+              Fedora support does not imply a tested Fedora desktop package.
+              There is no published Linux ARM desktop build in this release. On
+              Wayland, test global shortcuts and screen-capture permissions in
+              your actual session.
+            </p>
+            <h3>macOS 14+: Apple Silicon or Intel</h3>
+            <ol>
+              <li>
+                Check About This Mac: Apple Silicon uses the arm64 ZIP; an Intel
+                processor uses x64. Download the matching archive/checksum.
+              </li>
+              <li>
+                Verify with
+                <code
+                  >shasum -a 256 -c
+                  <!-- release:filename:macos-arm64 -->Strife-0.1.0-preview.2-osx-arm64.zip<!-- /release -->.sha256</code
+                >
+                (change the filename for Intel), extract, and move Strife.app to
+                Applications.
+              </li>
+              <li>
+                Launch it. The preview build is ad-hoc signed and not notarized.
+                After confirming its origin, use the specific app's approval
+                flow in System Settings → Privacy &amp; Security if macOS blocks
+                it. Do not disable Gatekeeper globally.
+              </li>
+              <li>
+                Grant microphone access; grant accessibility/input or
+                screen-capture permissions only for features you use. Relaunch
+                if the OS requires it after a permission change.
+              </li>
+            </ol>
+            <p>
+              Keep the app bundle intact. If a build will not launch on its
+              documented minimum OS, collect its version/architecture and the
+              specific OS error. Native build requirements and packaging details
+              are in
+              <a
+                data-release-doc="docs/releases.md"
+                href="https://github.com/M-ax/strife/blob/build/release-0.1.0-preview.2/docs/releases.md"
+                >Strife's release guide</a
+              >.
+            </p>
+          </section>
+          <section id="connect">
+            <h2>15 / Connect the humans</h2>
+            <ol>
+              <li>
+                Open <strong>Connect to server</strong>. Enter
+                <code>voice.example.com</code> as the hostname (no https://),
+                port <code>64738</code>, your ordinary username, and the
+                optional server join password.
+              </li>
+              <li>
+                Review the native certificate dialog. Compare unfamiliar or
+                changed fingerprints with the operator. Do not train your group
+                to accept every changed certificate.
+              </li>
+              <li>
+                Join a channel in the left tree. Channel chat goes to the
+                current Mumble channel. Verify mute/deafen and input/output
+                devices.
+              </li>
+              <li>
+                Open <strong>Menu → Voice settings &amp; shortcuts</strong>. For
+                push-to-talk, select Push To Talk in Audio Input and bind a
+                Push-to-Talk action in Shortcuts. Test while another application
+                has focus. Elevated applications on Windows can require matching
+                privileges for shortcuts.
+              </li>
+              <li>
+                Open <strong>Helltube → Server</strong> and enter
+                <code>https://watch.example.com</code>. Sign in inside the video
+                pane with a Helltube account. A Mumble password is not a
+                Helltube login.
+              </li>
+              <li>
+                Create/join a Helltube room with friends. Test a small
+                known-good upload and then the intended remote media sources.
+                Provider availability and permissions can vary independently of
+                your server.
+              </li>
+            </ol>
+            <p>
+              New Strife profiles start with RNNoise enabled. Imported Mumble
+              settings preserve their previous processing choice. Use the audio
+              wizard and a headset, select the intended microphone explicitly,
+              and verify gain/voice activation before blaming the network.
+            </p>
+            <h3>Channel chat and images</h3>
+            <p>
+              Channel chat preserves message line breaks, and links open through
+              your system's browser or registered application. Source builds
+              containing the
+              <a
+                href="https://github.com/M-ax/strife/commit/d29711fb17c0280450f72deb7e411e1ed74245ac"
+                >chat image fix</a
+              >
+              also display incoming embedded PNG, JPEG, GIF, WebP, and BMP
+              attachments inline. Images fit the chat pane, keep their
+              proportions, and retain any link target. This fix is newer than
+              the packaged download currently advertised on this site.
+            </p>
+            <p>
+              An <code>[Image unavailable]</code> placeholder means an
+              attachment is unsupported, unreadable, too large, or outside the
+              retained image history. Remote image URLs and other rich HTML are
+              not loaded in the chat pane. Reloading restores the retained
+              attachments from the running voice session.
+            </p>
+            <h3>Import your existing identity</h3>
+            <p>
+              Close Mumble so its latest settings are saved and disconnect
+              Strife voice. Choose <strong>Menu → Import from Mumble</strong>,
+              review the detected profile, and select the categories you want.
+              Imported settings, server data, and certificate identity replace
+              those selected Strife categories. Unselected categories and
+              Helltube/layout remain. Strife creates an import backup. Including
+              the client certificate preserves registered server identity;
+              merely copying your username does not.
+            </p>
+            <p>
+              The Windows profile is under <code>%LOCALAPPDATA%\Strife</code>;
+              other platforms use .NET's LocalApplicationData location.
+              <code>STRIFE_PROFILE</code> can select an explicit directory.
+              Protect identity/profile backups as credentials and do not share a
+              profile between simultaneous instances.
+            </p>
+            <h3>A useful invitation contains</h3>
+            <p>
+              Send the client download link, Mumble hostname/port/join password,
+              a trusted certificate fingerprint, Helltube HTTPS URL and
+              account-request instructions, and the channel/room to join. Keep
+              SuperUser, Helltube admin credentials, SSH keys, DNS tokens,
+              cookie exports and TURN shared secrets out of it. Use an ordinary
+              test account to confirm the invitation actually works.
+            </p>
+          </section>
+          <section id="verify">
+            <h2>16 / Acceptance tests: prove each layer works</h2>
+            <p>
+              A green process indicator is only the beginning. Work outward from
+              the server, then repeat from a different Internet connection.
+              Record the hostname, OS, deployed revision, image digest, date,
+              and results so future failures have a baseline.
+            </p>
+            <pre tabindex="0" data-copy><code># Server-side checks:
+sudo docker compose --project-directory /opt/strife-mumble ps
+sudo systemctl is-active helltube
+curl -fsS http://127.0.0.1:3000/api/health
+curl -fsS https://watch.example.com/api/health
+sudo ss -lntup
+# On a Linux/macOS client on another network:
+set -o pipefail
+curl -fsSL https://strife.zip/scripts/doctor.sh | bash -s -- voice.example.com watch.example.com</code></pre>
+            <ol>
+              <li>
+                <strong>DNS:</strong> resolve both names outside your LAN. Check
+                A and AAAA individually if configured. No unexpected Cloudflare
+                proxy addresses for voice/metal.
+              </li>
+              <li>
+                <strong>TLS:</strong> browse to the watch URL without
+                certificate warnings; verify expiration and hostname. Confirm
+                HTTP redirects to HTTPS. Voice certificate trust is a separate
+                test.
+              </li>
+              <li>
+                <strong>Private interfaces:</strong> port 3000 should be
+                unreachable remotely. Both <code>/internal</code> and
+                <code>/internal/anything</code> must be blocked externally.
+              </li>
+              <li>
+                <strong>Voice:</strong> two ordinary users on separate networks
+                join, exchange audio, mute/deafen, change channels, and send
+                channel text. Inspect the native connection information for UDP
+                use; working tunneled TCP voice can conceal blocked UDP.
+              </li>
+              <li>
+                <strong>Accounts:</strong> verify Helltube login, logout,
+                password change and non-admin access; reload Strife and confirm
+                expected session restoration.
+              </li>
+              <li>
+                <strong>WebSockets:</strong> two viewers see queue/play/pause
+                changes promptly. In browser developer tools, check the
+                authenticated WebSocket upgrade and ongoing messages; a page
+                loading alone proves very little.
+              </li>
+              <li>
+                <strong>Media:</strong> upload a small file, play and seek it
+                from both clients, then test a representative longer video while
+                watching CPU/RAM/disk/egress. Test remote providers separately.
+              </li>
+              <li>
+                <strong>Desktop:</strong> share from an external network and
+                watch from another, including optional audio. Test TURN
+                separately if you deployed it.
+              </li>
+              <li>
+                <strong>Reboot:</strong> schedule a brief interruption, reboot
+                the VPS, reconnect and verify both services return with
+                accounts, channels, uploads and certificates intact.
+              </li>
+              <li>
+                <strong>Restore:</strong> restore a backup to a disposable
+                isolated machine and repeat a login/media check. An archive that
+                has never been restored is an unproven recovery plan.
+              </li>
+            </ol>
+            <p>
+              Our doctor checks DNS, TCP/TLS, HTTP status, and relevant local
+              listeners. It cannot validate an admin's ACL decisions, actual
+              audio, certificate fingerprint agreement, UDP media, transcoder
+              performance, or TURN allocation. It does not dump secrets or logs.
+            </p>
+          </section>
+          <section id="operations">
+            <h2>17 / Backups, observability, and maintenance</h2>
+            <h3>Know what must survive</h3>
+            <div class="docs-table" tabindex="0">
+              <table>
+                <caption>
+                  Backup inventory
+                </caption>
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Location in this guide</th>
+                    <th>Why it matters</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Mumble state/config</td>
+                    <td>/opt/strife-mumble</td>
+                    <td>
+                      Database, certificate, accounts, ACLs, passwords and
+                      pinned Compose image.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Helltube data</td>
+                    <td>/var/lib/helltube</td>
+                    <td>
+                      Database, uploads and persistent application state. Copy
+                      consistently with the service stopped.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Helltube configuration</td>
+                    <td>/etc/helltube; optional /etc/helltube-cookies</td>
+                    <td>
+                      Environment, initial credentials, DNS/edge/TURN secrets
+                      and optional media credentials.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Service/proxy/TLS</td>
+                    <td>
+                      Your systemd unit/drop-ins; nginx or Caddy config;
+                      /etc/letsencrypt or Caddy's data directory
+                    </td>
+                    <td>
+                      Reconstruct listeners and renewal. Preserve
+                      certificate-manager account state securely.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Deployment record</td>
+                    <td>Chosen by you, off-host</td>
+                    <td>
+                      Source revision, Node version, image digest, DNS/firewall
+                      settings and restore order.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Client identity</td>
+                    <td>Each user's private profile/certificate backup</td>
+                    <td>
+                      Retains their Mumble registration; the server backup does
+                      not replace it.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p>
+              Backups contain passwords and private keys. Encrypt off-host
+              copies and restrict access. Define how much data you can afford to
+              lose (for example a day's uploads) and how long recovery may take.
+              Keep more than one generation; a backup taken after accidental
+              deletion may faithfully preserve the deletion.
+            </p>
+            <h3>A consistent baseline backup</h3>
+            <p>
+              Schedule downtime. Run this as one block in Bash on the server. It
+              stops the two apps, records whether each was running, and tries to
+              restart only those it stopped even if archiving fails. Ensure free
+              space before starting. The archive includes the core app
+              data/config; additionally capture the proxy/TLS and optional files
+              in the inventory above.
+            </p>
+            <pre tabindex="0" data-copy><code>sudo bash &lt;&lt;'BACKUP'
+set -euo pipefail
+umask 077
+install -d -m 700 /var/backups/strife
+voice_was_running=$(docker compose --project-directory /opt/strife-mumble ps --status running -q)
+video_was_running=no
+if systemctl is-active --quiet helltube; then video_was_running=yes; fi
+resume() {
+  if [[ -n $voice_was_running ]]; then docker compose --project-directory /opt/strife-mumble start; fi
+  if [[ $video_was_running == yes ]]; then systemctl start helltube; fi
+}
+trap resume EXIT
+docker compose --project-directory /opt/strife-mumble stop
+systemctl stop helltube
+stamp=$(date -u +%Y%m%dT%H%M%SZ)
+archive="/var/backups/strife/strife-$stamp.tar.gz"
+tar -czf "$archive" -C / opt/strife-mumble var/lib/helltube etc/helltube
+sha256sum "$archive" &gt; "$archive.sha256"
+tar -tzf "$archive" &gt;/dev/null
+BACKUP</code></pre>
+            <p>
+              Copy the encrypted backup and checksum to another
+              machine/provider. After restoring on a clean host, preserve
+              numeric ownership or deliberately remap it to the recreated
+              service UID; do not assume a newly created user has the same UID.
+              Reinstall dependencies, restore configuration, validate proxy
+              syntax and start services before moving DNS. Restoring the Mumble
+              data preserves its certificate and registrations. Restore SQLite
+              data as a consistent set rather than cherry-picking database/WAL
+              files.
+            </p>
+            <h3>A maintenance rhythm</h3>
+            <ul>
+              <li>
+                <strong>Daily:</strong> review backup completion, free disk,
+                service availability and provider billing/egress alerts.
+              </li>
+              <li>
+                <strong>Weekly:</strong> install supported OS security updates,
+                schedule necessary reboots, review certificate renewal and
+                unusual resource growth.
+              </li>
+              <li>
+                <strong>Before updates:</strong> capture a consistent backup and
+                versions; test the change on a spare host or restore first.
+              </li>
+              <li>
+                <strong>Periodically:</strong> restore a backup, rotate access
+                when administrators leave, verify ordinary user permissions, and
+                review provider/OS lifecycle dates.
+              </li>
+            </ul>
+            <p>
+              Useful commands are <code>df -h</code>, <code>free -h</code>,
+              <code>top</code>, <code>sudo docker stats --no-stream</code>,
+              <code>sudo journalctl -u helltube --since '1 hour ago'</code>, and
+              your provider's network graph. Keep log retention bounded. Redact
+              tokens, cookies, private IPs as needed and media bearer URLs
+              before sharing diagnostics. Do not paste environment files into an
+              issue.
+            </p>
+          </section>
+          <section id="upgrades">
+            <h2>18 / Upgrade deliberately, retain a rollback</h2>
+            <h3>Mumble container</h3>
+            <p>
+              The script pins 1.5.915 and its multi-architecture digest;
+              <code>compose pull</code> alone will not move that pin. For an
+              upgrade, read upstream release notes, record the old image string,
+              make a stopped-data backup, resolve and review the new image
+              digest, and change only the image in your Compose file. Then:
+            </p>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>sudo docker compose --project-directory /opt/strife-mumble config --quiet
+sudo docker compose --project-directory /opt/strife-mumble pull
+sudo docker compose --project-directory /opt/strife-mumble up -d
+sudo docker compose --project-directory /opt/strife-mumble ps</code></pre>
+            <p>
+              Verify two-client voice and channel permissions. If a version
+              migrated the database, reverting only the image may not be enough:
+              stop the new service and restore the matching old data/config
+              backup with the old image. Keep the failed new data separately for
+              investigation. Do not run <code>down -v</code> as an upgrade step.
+            </p>
+            <h3>Helltube managed install</h3>
+            <p>
+              The launcher always starts from its published source pin. It is
+              not a “get whatever is newest” updater. To deploy a newer
+              revision, review that revision's upstream installer, back up
+              data/config, and run it from the trusted updated checkout. The
+              upstream installer replaces managed infrastructure files. Opt-in
+              automatic updates track upstream main and can restart services;
+              understand that trust/availability trade-off before enabling them.
+              A split Worker frontend must be deployed separately and kept
+              compatible.
+            </p>
+            <h3>Helltube manual install</h3>
+            <ol>
+              <li>
+                Record <code>git -C /opt/helltube/app rev-parse HEAD</code>,
+                Node version, yt-dlp version and environment values (privately).
+                Make a consistent backup.
+              </li>
+              <li>
+                Build the selected revision in a new staging directory as an
+                unprivileged builder with <code>npm ci</code> and
+                <code>npm run build</code>. Run that revision's relevant checks.
+                Do not build over the live application.
+              </li>
+              <li>
+                Schedule downtime and stop Helltube. Preserve the old
+                application directory, install the new complete build at the
+                service's application path, set ownership correctly, and keep
+                data/config separate.
+              </li>
+              <li>
+                Start, verify local/public health, login, uploads, playback and
+                screen sharing. If it fails, stop it and restore the previous
+                application plus matching pre-migration data as needed.
+              </li>
+            </ol>
+            <p>
+              Update yt-dlp in its isolated environment when provider changes
+              require it:
+              <code
+                >sudo /opt/helltube/tools/bin/pip install --upgrade
+                'yt-dlp[default]'</code
+              >. Record the resulting version. Keep Node on a supported patched
+              release and update your service path intentionally. A TLS proxy or
+              DNS change does not repair a broken provider extractor.
+            </p>
+          </section>
+          <section id="recovery">
+            <h2>19 / The “it doesn't work” decision tree</h2>
+            <div class="docs-table" tabindex="0">
+              <table>
+                <caption>
+                  Start with the failing layer
+                </caption>
+                <thead>
+                  <tr>
+                    <th>Symptom</th>
+                    <th>Check / next action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>SSH suddenly fails</td>
+                    <td>
+                      Use provider console. Check address, SSH unit, key
+                      ownership and firewall source rules. Keep working sessions
+                      open while fixing it.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Script says unsupported OS or no terminal</td>
+                    <td>
+                      Check /etc/os-release and architecture. Use the manual
+                      route for that OS. Helltube needs systemd and a
+                      controlling SSH terminal; reconnect with ssh -t.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Mumble connects but audio stutters or never arrives</td>
+                    <td>
+                      Check mute/input/PTT first, then UDP 64738 in every
+                      firewall/NAT layer. Confirm DNS-only records. Examine
+                      loss/jitter and CPU load during encodes.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Mumble container restarts</td>
+                    <td>
+                      Inspect Compose logs; check port conflicts, data ownership
+                      and SELinux labeling. Verify the pinned image can be
+                      pulled for your CPU.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>502 Bad Gateway</td>
+                    <td>
+                      Probe 127.0.0.1:3000/api/health on the host. If it fails,
+                      inspect helltube.service, Node path, env/data permissions
+                      and native worker dependencies. If it works, inspect proxy
+                      upstream/SELinux.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Certificate issuance fails</td>
+                    <td>
+                      Check A/AAAA, public routing, CAA records, challenge
+                      method, DNS-token scope and system time. Avoid repeatedly
+                      hitting production ACME rate limits; fix the cause first.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Login loops or 403 Origin errors</td>
+                    <td>
+                      Use HTTPS; match ALLOWED_ORIGINS exactly, preserve
+                      Origin/cookies, and check TRUST_PROXY. Enter the intended
+                      Helltube URL in Strife. Do not weaken TLS or SameSite as a
+                      first fix.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Page loads, queue changes don't arrive</td>
+                    <td>
+                      Check WSS upgrade (101), nginx upgrade headers and proxy
+                      timeouts. A static HTML response does not establish a
+                      working WebSocket.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Video buffers; voice also suffers</td>
+                    <td>
+                      Measure FFmpeg speed, CPU contention, RAM/swap and egress.
+                      Lower concurrency/bitrate or move video to a
+                      larger/separate host.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Upload returns 413 / fails midway</td>
+                    <td>
+                      Check per-request proxy limits, app storage/user quotas,
+                      disk space and chunk routing. Do not confuse per-chunk
+                      size with total file size.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Desktop share starts but viewers see nothing</td>
+                    <td>
+                      Check announced public address, bind interface, 44444
+                      UDP/TCP and NAT. Test from another network, then TURN.
+                      HTTPS proxy success is not media success.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>One remote media provider fails</td>
+                    <td>
+                      Check current yt-dlp/FFmpeg, source availability and
+                      upstream logs. Optional cookies/VPN are separate
+                      operational features; protect any imported account
+                      sessions.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Works until reboot</td>
+                    <td>
+                      Check enabled Docker/Helltube/proxy services, persistent
+                      mounts and boot ordering. Re-test recovery before inviting
+                      everyone back.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <h3>Recover an interrupted Mumble bootstrap</h3>
+            <p>
+              The script deliberately refuses to overwrite
+              <code>/opt/strife-mumble</code>. Inspect it first. If Compose and
+              the password file were written, fix the reported error and resume
+              with the commands below. The directory should remain root-owned
+              and private. Never run a fresh bootstrap over existing data to
+              “fix” a password problem.
+            </p>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>sudo docker compose --project-directory /opt/strife-mumble config --quiet
+sudo docker compose --project-directory /opt/strife-mumble up -d
+sudo docker compose --project-directory /opt/strife-mumble logs --tail=100
+sudo docker compose --project-directory /opt/strife-mumble ps</code></pre>
+            <p>
+              If initialization failed before creating a usable Compose file,
+              verify no strife-mumble container is running, then preserve the
+              incomplete directory under a clearly named backup path and rerun.
+              Review exactly what exists before moving anything. If there is a
+              working database, use the recovery/backup route instead of
+              regenerating credentials.
+            </p>
+            <h3>Recover Helltube</h3>
+            <p>
+              The launcher removes only its private temporary source download;
+              upstream-created app data/config remain. Read the installer error
+              and service journal. Save modified environment/proxy files before
+              rerunning the pinned installer because it replaces managed
+              configuration. Restore a matched source/data backup if a
+              deployment changed the database incompatibly. Confirm services
+              after recovery; a successful installer exit does not replace your
+              external media test.
+            </p>
+            <h3>
+              Stop or retire the installation without deleting the wrong thing
+            </h3>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code># Stops/removes this Compose project's containers; bind-mounted data remains:
+sudo docker compose --project-directory /opt/strife-mumble down
+# Stops Helltube and prevents boot startup; application data remains:
+sudo systemctl disable --now helltube
+# Managed install only, if its optional updater was enabled:
+sudo systemctl disable --now helltube-update.timer helltube-update.path</code></pre>
+            <p>
+              Then remove only this site's proxy block, validate/reload the
+              shared proxy, and close its provider/host firewall rules. Archive
+              verified data/config before any permanent removal. Revoke
+              dedicated DNS/edge/TURN credentials when no other service uses
+              them. Release DNS records and provider resources deliberately;
+              stopping an app does not stop VPS, disk, snapshot or reserved-IP
+              billing. Do not disable a shared proxy or renewal service used by
+              other sites.
+            </p>
+          </section>
+          <section id="sources">
+            <h2>20 / Sources, versions, and limits</h2>
+            <p>
+              The application details here follow
+              <a
+                data-release-doc="README.md"
+                href="https://github.com/M-ax/strife/blob/build/release-0.1.0-preview.2/README.md"
+                >Strife's source and connection guide</a
+              >
+              and the
+              <a
+                href="https://github.com/M-ax/helltube/tree/b8edab6a0faca32fdddadc1ccfbba74444f7d8bf"
+                >pinned Helltube checkout</a
+              >. External package repositories, cloud offerings and media
+              providers change; check the linked upstream documentation before a
+              later deployment. Hardware sizing is an estimate and needs
+              workload measurement.
+            </p>
+            <p>
+              The scripts are checked for Bash syntax, installation boundaries
+              and failure behavior, and the website is checked for links,
+              downloads and accessibility. They do not constitute a live
+              deployment certification for every OS/provider combination. In
+              particular, real DNS issuance, public firewall behavior, native
+              media processing, OS microphone permissions and TURN require
+              testing on your infrastructure. Manual Fedora and native
+              Windows/macOS hosting have additional platform-specific
+              dependencies.
+            </p>
+            <p>
+              For a website/wiki/script problem, open an issue in
+              <a href="https://github.com/M-ax/strife-web/issues">strife-web</a
+              >. For the desktop use
+              <a href="https://github.com/M-ax/strife/issues">Strife issues</a>;
+              for video service behavior use
+              <a href="https://github.com/M-ax/helltube/issues"
+                >Helltube issues</a
+              >. Include versions, OS/architecture, the failing step, expected
+              behavior and redacted logs. Exclude credential files, cookie
+              exports and private keys.
+            </p>
+            <p>
+              <a class="top-link" href="#top">Back to the top ↑</a> ·
+              <a href="/scripts/">Just give me the scripts →</a>
+            </p>
+          </section>
+        </article>
+      </div>
+    </main>
+    <footer class="docs-footer wrap">
+      <a href="/">Strife home</a><a href="/scripts/">Script downloads</a
+      ><a href="#top">Back to top ↑</a
+      ><a href="https://github.com/M-ax/strife-web/issues"
+        >Report a docs issue ↗</a
+      >
+    </footer>
+  </body>
+</html>

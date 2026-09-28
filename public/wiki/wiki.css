@@ -1,0 +1,233 @@
+.docs-header {
+  flex-wrap: wrap;
+  padding-block: 22px;
+}
+.docs-header nav {
+  margin: 0;
+  flex-wrap: wrap;
+}
+.docs-hero {
+  padding-block: 65px 40px;
+  max-width: 930px;
+}
+.docs-hero h1 {
+  font: 800 clamp(54px, 8vw, 100px)/0.98 var(--display);
+  margin-block: 20px;
+}
+.docs-hero > p + p {
+  margin-top: 16px;
+}
+.docs-hero .lede {
+  color: var(--muted);
+  font-size: 19px;
+  max-width: 760px;
+}
+.docs-layout {
+  display: grid;
+  grid-template-columns: 235px minmax(0, 1fr);
+  gap: 55px;
+  align-items: start;
+  padding-bottom: 80px;
+}
+.docs-toc {
+  position: sticky;
+  top: 24px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.docs-toc summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--accent);
+}
+.docs-toc ol {
+  padding-left: 20px;
+  font-size: 13px;
+}
+.docs-toc li {
+  margin-block: 10px;
+}
+.docs-toc a {
+  text-decoration: none;
+}
+.docs-article {
+  min-width: 0;
+  max-width: 900px;
+  overflow-wrap: anywhere;
+}
+.docs-article section {
+  margin-bottom: 54px;
+  scroll-margin-top: 25px;
+}
+.docs-article h2 {
+  font: 800 38px/1.1 var(--display);
+  margin-block: 32px 20px;
+  border-top: 1px solid var(--line);
+  padding-top: 30px;
+}
+.docs-article h3 {
+  font-size: 21px;
+  line-height: 1.3;
+  margin-block: 30px 14px;
+}
+.docs-article h4 {
+  font-size: 16px;
+  margin-block: 22px 12px;
+}
+.docs-article p,
+.docs-article ul,
+.docs-article ol {
+  margin-block: 16px;
+}
+.docs-article li {
+  margin-block: 9px;
+}
+.docs-article a {
+  color: var(--accent-light);
+}
+.docs-article code {
+  font-size: 0.9em;
+  font-family: Consolas, monospace;
+}
+.docs-article :not(pre) > code {
+  background: var(--panel-raised);
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+.docs-article pre {
+  margin-block: 18px;
+  padding: 22px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  overflow-x: auto;
+  font-size: 14px;
+  line-height: 1.65;
+  tab-size: 2;
+}
+.docs-article pre code {
+  font-size: inherit;
+  overflow-wrap: normal;
+}
+.docs-article pre:focus-visible,
+.docs-table:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.code-tools {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  align-items: center;
+  margin-block: -9px 20px;
+  min-height: 34px;
+}
+.code-tools button {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 4px;
+  padding: 5px 12px;
+  font-size: 12px;
+}
+.code-tools span {
+  color: var(--muted);
+  font-size: 12px;
+}
+.docs-table {
+  overflow-x: auto;
+  margin-block: 24px;
+}
+.docs-table table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 570px;
+  text-align: left;
+  font-size: 14px;
+}
+.docs-table th,
+.docs-table td {
+  padding: 15px;
+  border: 1px solid var(--line);
+  vertical-align: top;
+}
+.docs-table th {
+  color: var(--accent-light);
+  background: var(--panel);
+}
+.callout {
+  background: var(--accent-dim);
+  border-left: 3px solid var(--accent);
+  padding: 18px 24px;
+  margin-block: 24px;
+}
+.callout p:first-child {
+  margin-top: 0;
+}
+.callout p:last-child {
+  margin-bottom: 0;
+}
+.script-note {
+  font-size: 24px;
+  line-height: 1.5;
+}
+.docs-actions {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-block: 22px;
+}
+.docs-article .button-primary {
+  color: var(--accent-ink);
+}
+.docs-footer {
+  border-top: 1px solid var(--line);
+  padding-block: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 25px;
+  color: var(--muted);
+}
+.top-link {
+  font-size: 13px;
+}
+@media (max-width: 1000px) {
+  .docs-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .docs-toc {
+    position: static;
+    max-height: none;
+  }
+  .docs-toc ol {
+    columns: 2;
+    column-gap: 40px;
+  }
+}
+@media (max-width: 650px) {
+  .docs-header nav {
+    display: flex;
+    gap: 18px;
+    width: 100%;
+  }
+  .docs-hero {
+    padding-top: 38px;
+  }
+  .docs-hero .lede {
+    font-size: 16px;
+  }
+  .docs-toc ol {
+    columns: 1;
+  }
+  .docs-article pre {
+    padding: 16px;
+    font-size: 12px;
+  }
+  .script-note {
+    font-size: 20px;
+  }
+}

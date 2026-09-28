@@ -56,7 +56,8 @@
       >
       <nav aria-label="Main navigation">
         <a href="#features">The pitch</a>
-        <a href="#questions">The fine print</a>
+        <a href="/wiki/">Getting started</a>
+        <a href="/scripts/">Server scripts</a>
         <a class="nav-source" href="https://github.com/M-ax/strife"
           >GitHub <span aria-hidden="true">↗</span></a
         >
@@ -430,6 +431,7 @@
                 Requires GTK 3, WebKitGTK 4.1, and audio/X11 libraries. The .NET
                 runtime is included.
                 <a
+                  data-release-doc="docs/releases.md"
                   href="https://github.com/M-ax/strife/blob/build/release-0.1.0-preview.2/docs/releases.md"
                   >Linux setup instructions ↗</a
                 >
@@ -535,7 +537,9 @@
               You need access to a Mumble/Murmur server and a Helltube server.
               Run your own or join servers someone else operates. Strife is the
               client; it doesn't include a hosted community service or set up
-              servers for you.
+              servers for you. The
+              <a href="/wiki/">getting-started wiki</a> walks through hosting,
+              and the <a href="/scripts/">server scripts</a> automate the setup.
             </p>
           </details>
           <details>
@@ -550,6 +554,25 @@
               processing, networking, and global shortcuts. Vanilla servers
               don't need a special plugin or a Strife-shaped hole punched in
               them.
+            </p>
+          </details>
+          <details>
+            <summary>
+              Do images show up in channel chat?<span aria-hidden="true"
+                >+</span
+              >
+            </summary>
+            <p>
+              Source builds with the
+              <a
+                href="https://github.com/M-ax/strife/commit/d29711fb17c0280450f72deb7e411e1ed74245ac"
+                >chat image fix</a
+              >
+              show incoming embedded images inline, sized to the chat pane.
+              Linked images keep their targets. Unsupported or unreadable images
+              show a text placeholder; remote image URLs are not loaded as
+              attachments. The packaged downloads currently listed here predate
+              this fix.
             </p>
           </details>
           <details>
@@ -612,7 +635,9 @@
       >
       <p>Less platform. More hanging out.</p>
       <div>
-        <a href="https://github.com/M-ax/strife">Source ↗</a
+        <a href="/wiki/">Getting started</a
+        ><a href="/scripts/">Server scripts</a
+        ><a href="https://github.com/M-ax/strife">Source ↗</a
         ><a href="https://github.com/M-ax/strife/issues">Report a bug ↗</a
         ><span>strife.zip</span>
       </div>
