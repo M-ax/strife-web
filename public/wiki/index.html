@@ -43,9 +43,9 @@
           when the boring bits get ideas.
         </p>
         <p>
-          Last reviewed: <time datetime="2026-09-27">27 September 2026</time>.
+          Last reviewed: <time datetime="2026-09-28">28 September 2026</time>.
           Client baseline: Strife
-          <!-- release:version -->0.1.0-preview.2<!-- /release -->. Examples use
+          <!-- release:version -->0.1.0-preview.3<!-- /release -->. Examples use
           <code>voice.example.com</code>, <code>watch.example.com</code>, and
           the documentation-only IP <code>203.0.113.10</code>. Replace them with
           your real values.
@@ -1484,7 +1484,7 @@ sudo ss -lntup 'sport = :44444'</code></pre>
               tabindex="0"
               data-copy
             ><code># PowerShell, in the directory containing your download:
-Get-FileHash .\<!-- release:filename:windows-x64 -->Strife-0.1.0-preview.2-win-x64-Setup.exe<!-- /release --> -Algorithm SHA256</code></pre>
+Get-FileHash .\<!-- release:filename:windows-x64 -->Strife-0.1.0-preview.3-win-x64-Setup.exe<!-- /release --> -Algorithm SHA256</code></pre>
             <p>
               If the UI is blank, check WebView2. If a native DLL is missing,
               check the VC++ runtime and that the whole portable folder was
@@ -1505,8 +1505,8 @@ sudo apt-get install -y libgtk-3-0 libwebkit2gtk-4.1-0 libnotify4 libasound2t64 
   libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 \
   libxcb-xinerama0 libxcb-xkb1 libxkbcommon-x11-0 libgl1 libegl1
 # Download the archive and adjacent checksum from the platform card.
-sha256sum -c <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.2-linux-x64.tar.gz<!-- /release -->.sha256
-tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.2-linux-x64.tar.gz<!-- /release -->
+sha256sum -c <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.3-linux-x64.tar.gz<!-- /release -->.sha256
+tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.3-linux-x64.tar.gz<!-- /release -->
 ./Strife/Strife</code></pre>
             <p>
               Extract into a fresh directory when upgrading instead of mixing
@@ -1528,7 +1528,7 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.2-linux-x64.tar
                 Verify with
                 <code
                   >shasum -a 256 -c
-                  <!-- release:filename:macos-arm64 -->Strife-0.1.0-preview.2-osx-arm64.zip<!-- /release -->.sha256</code
+                  <!-- release:filename:macos-arm64 -->Strife-0.1.0-preview.3-osx-arm64.zip<!-- /release -->.sha256</code
                 >
                 (change the filename for Intel), extract, and move Strife.app to
                 Applications.
@@ -1552,7 +1552,7 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.2-linux-x64.tar
               are in
               <a
                 data-release-doc="docs/releases.md"
-                href="https://github.com/M-ax/strife/blob/build/release-0.1.0-preview.2/docs/releases.md"
+                href="https://github.com/M-ax/strife/blob/2071ef214312a71017c57b616de2c467484002b3/docs/releases.md"
                 >Strife's release guide</a
               >.
             </p>
@@ -1572,9 +1572,13 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.2-linux-x64.tar
                 to accept every changed certificate.
               </li>
               <li>
-                Join a channel in the left tree. Channel chat goes to the
-                current Mumble channel. Verify mute/deafen and input/output
-                devices.
+                Join a channel in the rooms tree. Empty sibling rooms are
+                grouped under a gray <strong>x channels</strong> control. Expand
+                it to reveal them at the same indentation. Rooms with users and
+                their parent channels stay visible; use
+                <strong>Find a channel</strong> to find rooms or users inside
+                collapsed groups. Channel chat goes to the current Mumble
+                channel. Verify mute/deafen and input/output devices.
               </li>
               <li>
                 Open <strong>Menu → Voice settings &amp; shortcuts</strong>. For
@@ -1605,16 +1609,10 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.2-linux-x64.tar
             <h3>Channel chat and images</h3>
             <p>
               Channel chat preserves message line breaks, and links open through
-              your system's browser or registered application. Source builds
-              containing the
-              <a
-                href="https://github.com/M-ax/strife/commit/d29711fb17c0280450f72deb7e411e1ed74245ac"
-                >chat image fix</a
-              >
-              also display incoming embedded PNG, JPEG, GIF, WebP, and BMP
-              attachments inline. Images fit the chat pane, keep their
-              proportions, and retain any link target. This fix is newer than
-              the packaged download currently advertised on this site.
+              your system's browser or registered application. The current
+              downloads also display incoming embedded PNG, JPEG, GIF, WebP, and
+              BMP attachments inline. Images fit the chat pane, keep their
+              proportions, and retain any link target.
             </p>
             <p>
               An <code>[Image unavailable]</code> placeholder means an
@@ -2138,7 +2136,7 @@ sudo systemctl disable --now helltube-update.timer helltube-update.path</code></
               The application details here follow
               <a
                 data-release-doc="README.md"
-                href="https://github.com/M-ax/strife/blob/build/release-0.1.0-preview.2/README.md"
+                href="https://github.com/M-ax/strife/blob/2071ef214312a71017c57b616de2c467484002b3/README.md"
                 >Strife's source and connection guide</a
               >
               and the

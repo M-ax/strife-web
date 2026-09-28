@@ -46,11 +46,11 @@ Build and test the app on each native target using the neighboring Strife reposi
 
 Import the complete set without repacking the native archives:
 
-    node scripts/import-release.mjs ../strife/artifacts/release 0.1.0-preview.2 build/release-0.1.0-preview.2
+    node scripts/import-release.mjs ../strife/artifacts/release 0.1.0-preview.3 2071ef214312a71017c57b616de2c467484002b3
 
 PowerShell callers can also use:
 
-    ./scripts/package-release.ps1 -SourceDirectory ../strife/artifacts/release -Version 0.1.0-preview.2 -SourceRef build/release-0.1.0-preview.2
+    ./scripts/package-release.ps1 -SourceDirectory ../strife/artifacts/release -Version 0.1.0-preview.3 -SourceRef 2071ef214312a71017c57b616de2c467484002b3
 
 The importer checks all five packages, copies them to releases, and writes per-file sizes and SHA-256 hashes to release.json and adjacent checksum files. Existing versioned files with different bytes are rejected. Choose a new version for every new build: R2 keys are immutable release locations of the form releases/VERSION/FILENAME, so resuming a download cannot mix builds.
 
