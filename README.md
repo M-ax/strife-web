@@ -24,7 +24,7 @@ On Linux/macOS replace the mount argument with `"type=bind,source=$PWD,target=/w
 
 The site uses static HTML/CSS, self-hosted fonts, and a small JavaScript enhancement. The Worker streams Windows, Linux, and macOS downloads from the private R2 bucket **strife-releases**, bound as **RELEASES** in wrangler.jsonc. No production credentials are committed.
 
-The website theme, logos, and social card use Strife teal (`#00E0BB`), matching the current app source. The landing page and wiki distinguish source-only appearance settings, chat styling, and fixed user controls sizing from the advertised preview.3 downloads. This source documentation update does not change the release manifest, package filenames, source revision, platform requirements, or signing status.
+The website theme, logos, and social card use Strife teal (`#00E0BB`), matching the app. The preview.4 downloads include appearance settings, installed-font discovery, an HSV color picker, chat styling, and fixed user controls sizing. The landing page and wiki describe these published features. Platform requirements and signing status are unchanged.
 
 ## Local development
 
@@ -48,11 +48,11 @@ Build and test the app on each native target using the neighboring Strife reposi
 
 Import the complete set without repacking the native archives:
 
-    node scripts/import-release.mjs ../strife/artifacts/release 0.1.0-preview.3 2071ef214312a71017c57b616de2c467484002b3
+    node scripts/import-release.mjs ../strife/artifacts/release 0.1.0-preview.4 6544e8a3c2fd6149f48c8f59968c7c981100d7c7
 
 PowerShell callers can also use:
 
-    ./scripts/package-release.ps1 -SourceDirectory ../strife/artifacts/release -Version 0.1.0-preview.3 -SourceRef 2071ef214312a71017c57b616de2c467484002b3
+    ./scripts/package-release.ps1 -SourceDirectory ../strife/artifacts/release -Version 0.1.0-preview.4 -SourceRef 6544e8a3c2fd6149f48c8f59968c7c981100d7c7
 
 The importer checks all five packages, copies them to releases, and writes per-file sizes and SHA-256 hashes to release.json and adjacent checksum files. Existing versioned files with different bytes are rejected. Choose a new version for every new build: R2 keys are immutable release locations of the form releases/VERSION/FILENAME, so resuming a download cannot mix builds.
 

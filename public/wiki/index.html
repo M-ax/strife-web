@@ -45,7 +45,7 @@
         <p>
           Last reviewed: <time datetime="2026-09-28">28 September 2026</time>.
           Client baseline: Strife
-          <!-- release:version -->0.1.0-preview.3<!-- /release -->. Examples use
+          <!-- release:version -->0.1.0-preview.4<!-- /release -->. Examples use
           <code>voice.example.com</code>, <code>watch.example.com</code>, and
           the documentation-only IP <code>203.0.113.10</code>. Replace them with
           your real values.
@@ -1484,7 +1484,7 @@ sudo ss -lntup 'sport = :44444'</code></pre>
               tabindex="0"
               data-copy
             ><code># PowerShell, in the directory containing your download:
-Get-FileHash .\<!-- release:filename:windows-x64 -->Strife-0.1.0-preview.3-win-x64-Setup.exe<!-- /release --> -Algorithm SHA256</code></pre>
+Get-FileHash .\<!-- release:filename:windows-x64 -->Strife-0.1.0-preview.4-win-x64-Setup.exe<!-- /release --> -Algorithm SHA256</code></pre>
             <p>
               If the UI is blank, check WebView2. If a native DLL is missing,
               check the VC++ runtime and that the whole portable folder was
@@ -1506,8 +1506,8 @@ sudo apt-get install -y libgtk-3-0 libwebkit2gtk-4.1-0 libnotify4 libasound2t64 
   libxcb-xinerama0 libxcb-xkb1 libxcb-shape0 libxcb-xinput0 \
   libxkbcommon-x11-0 libgl1 libopengl0 libegl1
 # Download the archive and adjacent checksum from the platform card.
-sha256sum -c <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.3-linux-x64.tar.gz<!-- /release -->.sha256
-tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.3-linux-x64.tar.gz<!-- /release -->
+sha256sum -c <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.4-linux-x64.tar.gz<!-- /release -->.sha256
+tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.4-linux-x64.tar.gz<!-- /release -->
 ./Strife/Strife</code></pre>
             <p>
               Extract into a fresh directory when upgrading instead of mixing
@@ -1529,7 +1529,7 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.3-linux-x64.tar
                 Verify with
                 <code
                   >shasum -a 256 -c
-                  <!-- release:filename:macos-arm64 -->Strife-0.1.0-preview.3-osx-arm64.zip<!-- /release -->.sha256</code
+                  <!-- release:filename:macos-arm64 -->Strife-0.1.0-preview.4-osx-arm64.zip<!-- /release -->.sha256</code
                 >
                 (change the filename for Intel), extract, and move Strife.app to
                 Applications.
@@ -1553,7 +1553,7 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.3-linux-x64.tar
               are in
               <a
                 data-release-doc="docs/releases.md"
-                href="https://github.com/M-ax/strife/blob/2071ef214312a71017c57b616de2c467484002b3/docs/releases.md"
+                href="https://github.com/M-ax/strife/blob/6544e8a3c2fd6149f48c8f59968c7c981100d7c7/docs/releases.md"
                 >Strife's release guide</a
               >.
             </p>
@@ -1622,13 +1622,12 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.3-linux-x64.tar
               not loaded in the chat pane. Reloading restores the retained
               attachments from the running voice session.
             </p>
-            <h3 id="source-updates">Appearance and panel updates in source</h3>
+            <h3 id="source-updates">Appearance and panel settings</h3>
             <p>
-              The latest Strife source uses a teal default accent, matching this
-              website. These appearance and panel changes are not included in
-              the advertised
-              <!-- release:version -->0.1.0-preview.3<!-- /release -->
-              downloads; build the current source to use them.
+              Strife uses a teal default accent, matching this website. The
+              advertised
+              <!-- release:version -->0.1.0-preview.4<!-- /release -->
+              downloads include these appearance and panel settings.
             </p>
             <p>
               Open <strong>Menu → Appearance</strong> to change the UI accent,
@@ -2172,7 +2171,7 @@ sudo systemctl disable --now helltube-update.timer helltube-update.path</code></
               The application details here follow
               <a
                 data-release-doc="README.md"
-                href="https://github.com/M-ax/strife/blob/2071ef214312a71017c57b616de2c467484002b3/README.md"
+                href="https://github.com/M-ax/strife/blob/6544e8a3c2fd6149f48c8f59968c7c981100d7c7/README.md"
                 >Strife's source and connection guide</a
               >
               and the

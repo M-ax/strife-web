@@ -4,6 +4,8 @@ Use Node.js 24+. The site is static HTML served by a Cloudflare Worker. Run `npm
 
 ## Keep Strife build references current
 
+An authorized Strife build/release push includes the new installers and platform archives in R2 unless the user explicitly requests a source-only update. Obtain and validate all advertised packages from the exact Strife source commit, import them under a new immutable version, run `npm run release:upload`, then deploy the updated website with `npm run deploy`. Upload packages before deploying their manifest. Finish with `npm run release:verify` against production; do not call the release published until every advertised package passes full byte/hash, header, and range verification. Documentation and Git pushes alone do not complete a release.
+
 Whenever a new Strife build or build changes are pushed to `main` or `master`, always cross-check this site's landing page, wiki, download instructions, and release documentation against that Strife revision. Update affected feature descriptions, UI instructions, compatibility notes, and troubleshooting guidance, and commit/push those documentation changes with the authorized build update. Clearly distinguish source-only fixes from features included in the advertised packages.
 
 `release.json` is the source of truth for the advertised Strife version, download filenames, and `sourceRef` (the Strife commit, tag, or branch used for that build). Prefer an immutable commit or release tag. Do not infer the published build from the latest upstream branch.
