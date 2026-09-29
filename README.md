@@ -24,6 +24,8 @@ On Linux/macOS replace the mount argument with `"type=bind,source=$PWD,target=/w
 
 The site uses static HTML/CSS, self-hosted fonts, and a small JavaScript enhancement. The Worker streams Windows, Linux, and macOS downloads from the private R2 bucket **strife-releases**, bound as **RELEASES** in wrangler.jsonc. No production credentials are committed.
 
+The website theme, logos, and social card use Strife teal (`#00E0BB`), matching the current app source. The landing page and wiki distinguish source-only appearance settings, chat styling, and fixed user controls sizing from the advertised preview.3 downloads. This source documentation update does not change the release manifest, package filenames, source revision, platform requirements, or signing status.
+
 ## Local development
 
 Use Node.js 24 or newer:

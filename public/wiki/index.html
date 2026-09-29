@@ -11,7 +11,7 @@
       content="From choosing a VPS to your first Strife watch party: OS choices, Windows/Linux/macOS setup, Mumble, Helltube, DNS, firewalls, reverse proxies, TLS, backups, and recovery."
     />
     <link rel="canonical" href="https://strife.zip/wiki/" />
-    <link rel="icon" href="/assets/favicon.svg?v=orange-mark" />
+    <link rel="icon" href="/assets/favicon.svg?v=teal-mark" />
     <link rel="stylesheet" href="/style.css" />
     <link rel="stylesheet" href="/wiki/wiki.css" />
     <script type="module" src="/wiki/wiki.js"></script>
@@ -21,7 +21,7 @@
     <header class="site-header docs-header wrap">
       <a class="brand" href="/" aria-label="Strife home"
         ><img
-          src="/assets/mark.svg?v=orange-mark"
+          src="/assets/mark.svg?v=teal-mark"
           width="36"
           height="36"
           alt=""
@@ -1621,6 +1621,41 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.3-linux-x64.tar
               retained image history. Remote image URLs and other rich HTML are
               not loaded in the chat pane. Reloading restores the retained
               attachments from the running voice session.
+            </p>
+            <h3 id="source-updates">Appearance and panel updates in source</h3>
+            <p>
+              The latest Strife source uses a teal default accent, matching this
+              website. These appearance and panel changes are not included in
+              the advertised
+              <!-- release:version -->0.1.0-preview.3<!-- /release -->
+              downloads; build the current source to use them.
+            </p>
+            <p>
+              Open <strong>Menu → Appearance</strong> to change the UI accent,
+              timestamp, username, and chat link colors, plus independent chat
+              and UI fonts. Colors accept hex codes or CSS names; the swatch
+              opens an HSV picker. Changes preview live.
+              <strong>Save appearance</strong> keeps them across launches;
+              <strong>Cancel</strong> or <strong>Esc</strong> restores the saved
+              appearance. <strong>Reset defaults</strong> previews the default
+              colors and fonts, including teal (<code>#00E0BB</code>); save to
+              keep the reset. Native Mumble dialogs and Helltube keep their own
+              appearance.
+            </p>
+            <p>
+              Font pickers search installed families and share a cached list.
+              The browser preview needs local font permission and offers
+              <strong>Retry font access</strong> after a denial. If its embedded
+              browser cannot show that prompt, use the desktop app, which reads
+              installed fonts directly. Chat messages now have timestamp
+              separators and distinct timestamp, username, and link colors.
+            </p>
+            <p>
+              User controls stay 240px tall when stacked above or below another
+              pane, and fill the available height when alone in a column. The
+              fixed height fits the controls at normal window sizes; very small
+              windows can still require scrolling. Drag the title or use its
+              position menu to rearrange panes.
             </p>
             <h3>Import your existing identity</h3>
             <p>

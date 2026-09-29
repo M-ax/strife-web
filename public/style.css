@@ -29,10 +29,10 @@
   --panel-raised: #222226;
   --text: #eeedf0;
   --muted: #a19da7;
-  --accent: #ff975e;
-  --accent-light: #ffb389;
-  --accent-dim: #32231f;
-  --accent-ink: #23140e;
+  --accent: #00e0bb;
+  --accent-light: #66ecd6;
+  --accent-dim: #00e0bb22;
+  --accent-ink: #101115;
   --green: #9ebdaa;
   --line: #2c2b31;
   --shadow: #08080a;
@@ -240,7 +240,7 @@ button[hidden],
   line-height: 0.98;
   margin-top: 24px;
 }
-.orange-type {
+.accent-type {
   color: var(--accent);
 }
 .hero-description {
@@ -287,7 +287,7 @@ button[hidden],
   content: "";
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(#ff975e15 0.7px, transparent 0.7px);
+  background-image: radial-gradient(#00e0bb15 0.7px, transparent 0.7px);
   background-size: 7px 7px;
   z-index: -1;
 }
