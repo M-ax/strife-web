@@ -70,6 +70,9 @@
                 <li><a href="#dns">DNS, ports, and NAT</a></li>
                 <li><a href="#os-setup">Prepare each server OS</a></li>
                 <li><a href="#docker">Install Docker per OS</a></li>
+                <li>
+                  <a href="#distro-docker">Arch, Rocky, and Void Docker</a>
+                </li>
                 <li><a href="#mumble">Install and administer Mumble</a></li>
                 <li><a href="#helltube">Ubuntu Helltube quick-start</a></li>
                 <li><a href="#manual-helltube">Manual Helltube install</a></li>
@@ -439,10 +442,51 @@ curl -fsSL https://strife.zip/scripts/helltube.sh | sudo bash</code></pre>
                     </td>
                   </tr>
                   <tr>
-                    <td>Rocky / Alma / RHEL / Arch / Alpine / BSD</td>
+                    <td>Arch Linux (x86_64)</td>
                     <td>
-                      Not covered by the bootstrap contracts. Alpine's libc and
-                      other native dependencies add work.
+                      Rolling release; keep the whole system updated. The
+                      existing Linux desktop tarball is shared with Ubuntu.
+                    </td>
+                    <td>
+                      <a href="#arch-host">Arch prep</a> → distro Docker/Compose
+                      → Mumble script → manual Helltube/systemd.
+                      <a href="#linux-arch">Desktop dependencies</a>.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Rocky Linux 10 (x86_64)</td>
+                    <td>
+                      Enterprise base with SELinux. Desktop WebKitGTK and some
+                      media packages need EPEL plus CRB. Rocky 10 requires an
+                      x86-64-v3 capable CPU.
+                    </td>
+                    <td>
+                      <a href="#rocky-host">Rocky prep</a> → Docker's RHEL
+                      repository → Mumble script → manual Helltube/systemd.
+                      <a href="#linux-rocky">Desktop dependencies</a>.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Void Linux (x86_64, glibc)</td>
+                    <td>
+                      Rolling release with runit instead of systemd. Select the
+                      glibc edition for Strife and the shared Node binary
+                      installation.
+                    </td>
+                    <td>
+                      <a href="#void-host">Void prep</a> → distro Docker/Compose
+                      → Mumble script → manual Helltube with
+                      <a href="#void-runit">runit</a>.
+                      <a href="#linux-void">Desktop dependencies</a>.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Rocky 8/9 / Alma / RHEL / Alpine / Void musl / BSD</td>
+                    <td>
+                      Outside the desktop targets checked here. Rocky 8/9's
+                      glibc is too old for the shipped desktop; Alpine and Void
+                      musl use a different libc. A server can still serve
+                      supported clients on a different OS.
                     </td>
                     <td>
                       Choose a supported Linux VM, or follow each upstream's
@@ -647,7 +691,7 @@ sudo ufw status verbose</code></pre>
                 >Docker firewall behavior</a
               >.
             </p>
-            <h3>Fedora host firewall</h3>
+            <h3>Fedora / Rocky host firewall</h3>
             <p>
               Use <code>sudo firewall-cmd --get-active-zones</code> to find the
               zone attached to your external interface. The example assumes
@@ -666,6 +710,14 @@ sudo firewall-cmd --permanent --zone=public --add-port=44444/tcp
 sudo firewall-cmd --permanent --zone=public --add-port=44444/udp
 sudo firewall-cmd --reload
 sudo firewall-cmd --zone=public --list-all</code></pre>
+            <p>
+              On Arch, install <code>ufw</code>, enable its systemd service, and
+              use the UFW rules above. On Void, install <code>ufw</code>, enable
+              <code>/etc/sv/ufw</code> through runit, and use the same rules.
+              Keep SSH access and existing rules intact. Docker's published-port
+              caveat applies to all three distributions; verify TCP and UDP
+              reachability from outside the host.
+            </p>
             <p>
               At home, reserve the server's LAN address and forward each listed
               protocol to it. Do not forward 3000. Test from a phone hotspot:
@@ -715,6 +767,68 @@ timedatectl status</code></pre>
               detects enabled SELinux with <code>getenforce</code> and adds
               <code>:Z</code> to its own data bind mount. Do not relabel
               arbitrary system directories or disable SELinux globally.
+            </p>
+            <h3 id="arch-host">Arch Linux</h3>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>sudo pacman -Syu --needed ca-certificates curl openssl git iproute2 ufw
+sudo systemctl enable --now ufw
+cat /etc/os-release
+uname -m
+timedatectl status</code></pre>
+            <p>
+              Use full upgrades, not <code>pacman -Sy</code> followed by
+              selective upgrades. Reboot after kernel/library updates when
+              needed. The Helltube Ubuntu installer is not for Arch; follow the
+              manual path.
+            </p>
+            <h3 id="rocky-host">Rocky Linux 10</h3>
+            <pre tabindex="0" data-copy><code>sudo dnf upgrade --refresh -y
+sudo dnf install -y ca-certificates curl openssl git iproute firewalld dnf-plugins-core epel-release
+sudo dnf config-manager --set-enabled crb
+sudo systemctl enable --now firewalld
+cat /etc/os-release
+getenforce
+timedatectl status</code></pre>
+            <p>
+              Keep SELinux enforcing. EPEL is an additional Fedora-maintained
+              repository; CRB supplies dependencies it needs. Use Rocky 10
+              repositories together, never Fedora RPMs or Ubuntu packages. See
+              <a
+                href="https://docs.rockylinux.org/teams/rel_eng/repo/"
+                >Rocky's repository guidance</a
+              >
+              and
+              <a
+                href="https://docs.rockylinux.org/latest/releases/release_notes/10_0/"
+                >Rocky 10 CPU and platform requirements</a
+              >.
+            </p>
+            <h3 id="void-host">Void Linux glibc</h3>
+            <pre tabindex="0" data-copy><code>sudo xbps-install -Suy
+# If XBPS itself updated, repeat the full update before installing packages.
+sudo xbps-install -Suy
+sudo xbps-install -y bash ca-certificates curl openssl git iproute2 ufw chrony
+sudo ln -s /etc/sv/chronyd /var/service/
+sudo ln -s /etc/sv/ufw /var/service/
+sudo sv up chronyd ufw
+cat /etc/os-release
+ldd --version
+chronyc tracking</code></pre>
+            <p>
+              These service links assume a fresh host; keep existing links
+              instead of replacing them. Void uses
+              <a href="https://docs.voidlinux.org/config/services/index.html"
+                >runit service management</a
+              >, so use <code>sv</code> rather than <code>systemctl</code> or
+              <code>journalctl</code>. Confirm
+              <code>ldd --version</code> reports glibc. The
+              <a href="https://docs.voidlinux.org/installation/musl.html"
+                >musl edition</a
+              >
+              cannot directly run the shipped Strife or upstream glibc Node
+              binaries.
             </p>
             <h3>Windows or macOS hosting</h3>
             <p>
@@ -792,6 +906,59 @@ sudo docker compose version</code></pre>
               when prompted. Docker-compatible Podman commands are not the same
               runtime contract as this bootstrap. On Fedora, the script labels
               its data mount for SELinux.
+            </p>
+          </section>
+          <section id="distro-docker">
+            <h2>Docker on Arch, Rocky, and Void</h2>
+            <h3>Arch: distribution packages</h3>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>sudo pacman -Syu --needed docker docker-compose
+sudo systemctl enable --now docker
+sudo docker run --rm hello-world
+sudo docker compose version</code></pre>
+            <p>
+              Use the
+              <a href="https://archlinux.org/packages/extra/x86_64/docker/"
+                >Arch Docker package</a
+              >
+              and its Compose plugin. The Mumble script needs the
+              <code>docker compose</code> subcommand.
+            </p>
+            <h3>Rocky 10: Docker's RHEL repository</h3>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>sudo dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+sudo dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo systemctl enable --now docker
+sudo docker run --rm hello-world
+sudo docker compose version</code></pre>
+            <p>
+              Follow
+              <a href="https://docs.rockylinux.org/gemstones/containers/docker/"
+                >Rocky's Docker instructions</a
+              >
+              and verify Docker's signing key when prompted. Keep SELinux
+              enabled; the Mumble script labels its own data mount. Do not
+              substitute Podman for this Docker-specific script.
+            </p>
+            <h3>Void glibc: distribution packages and runit</h3>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>sudo xbps-install -y docker docker-compose
+sudo ln -s /etc/sv/containerd /var/service/
+sudo ln -s /etc/sv/docker /var/service/
+sudo sv up containerd docker
+sudo docker run --rm hello-world
+sudo docker compose version</code></pre>
+            <p>
+              Keep existing service links if already enabled. Once the daemon
+              and Compose work, use the unchanged Mumble script below. Its
+              container restart policy handles Mumble restarts; Helltube's
+              Ubuntu-only installer remains separate.
             </p>
           </section>
           <section id="mumble">
@@ -948,7 +1115,9 @@ sudo certbot renew --cert-name helltube --dry-run</code></pre>
             </p>
           </section>
           <section id="manual-helltube">
-            <h2>11 / Helltube manually: Ubuntu, Debian, Fedora</h2>
+            <h2>
+              11 / Helltube manually: Ubuntu, Debian, Fedora, Arch, Rocky, Void
+            </h2>
             <p>
               This is the alternative for another supported Linux environment,
               another DNS provider, or an operator who wants to manage each
@@ -986,6 +1155,36 @@ sudo apt-get install -y ca-certificates curl git xz-utils build-essential \
                 >FFmpeg download page</a
               >
               describes upstream distribution options.
+            </p>
+            <p>Arch Linux:</p>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>sudo pacman -Syu --needed ca-certificates curl git xz base-devel python python-pip ffmpeg openssl</code></pre>
+            <p>Rocky 10, after enabling EPEL and CRB:</p>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>sudo dnf install -y ca-certificates curl git xz gcc gcc-c++ make python3 python3-pip ffmpeg-free openssl</code></pre>
+            <p>
+              Rocky's <code>ffmpeg-free</code> has the same codec caveat as
+              Fedora. Confirm <code>libx264</code> and <code>aac</code> are
+              present before enabling transcoding; this guide does not silently
+              add a third-party codec repository.
+            </p>
+            <p>Void glibc:</p>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>sudo xbps-install -y ca-certificates curl git xz base-devel python3 python3-pip ffmpeg6 openssl</code></pre>
+            <p>
+              On every distro, run
+              <code>ffmpeg -hide_banner -encoders</code> and verify
+              <code>libx264</code> and <code>aac</code>. Continue with the
+              shared Node, service account, pinned checkout, credentials, and
+              environment steps. Arch and Rocky use the systemd unit; Void uses
+              the runit service below. Do not run the Ubuntu-only Helltube
+              bootstrap on these targets.
             </p>
             <h3>Install a compatible system-wide Node</h3>
             <p>
@@ -1104,6 +1303,11 @@ MAX_USER_STORAGE_BYTES=10737418240</code></pre>
             </p>
             <h3>Install the systemd unit</h3>
             <p>
+              For Ubuntu, Debian, Fedora, Arch, and Rocky. Void users should
+              skip this unit and its <code>systemctl</code> commands and use
+              <a href="#void-runit">the runit service</a>.
+            </p>
+            <p>
               Create <code>/etc/systemd/system/helltube.service</code> with
               <code>sudoedit</code>:
             </p>
@@ -1150,6 +1354,66 @@ sudo ss -lntp 'sport = :3000'</code></pre>
               appropriate file labels and the distro's documented service
               policy/booleans; do not switch enforcement off to hide a
               permissions mistake.
+            </p>
+            <h3 id="void-runit">Void: Helltube as a runit service</h3>
+            <p>
+              After the shared build and credential setup, create an envdir from
+              the simple, unquoted environment assignments above. Do not source
+              environment files as root shell scripts. Re-run this conversion
+              after editing configuration; explicitly delete envdir files for
+              variables you remove.
+            </p>
+            <pre tabindex="0" data-copy><code>sudo python3 - &lt;&lt;'PY'
+import os, pathlib, re
+os.umask(0o077)
+target = pathlib.Path('/etc/helltube/env')
+target.mkdir(mode=0o700, exist_ok=True)
+for name in ['helltube.env', 'desktop.env']:
+    source = pathlib.Path('/etc/helltube') / name
+    if name == 'desktop.env' and not source.exists():
+        continue
+    for line in source.read_text().splitlines():
+        if not line.strip() or line.lstrip().startswith('#'):
+            continue
+        key, separator, value = line.partition('=')
+        if not separator or not re.fullmatch(r'[A-Z][A-Z0-9_]*', key):
+            raise ValueError('Expected NAME=value: ' + key)
+        (target / key).write_text(value + '\n')
+PY
+sudo install -d -m 755 /etc/sv/helltube /etc/sv/helltube/log
+sudo install -d -m 700 /var/log/helltube</code></pre>
+            <p>
+              Create <code>/etc/sv/helltube/run</code> using
+              <code>sudoedit</code>:
+            </p>
+            <pre tabindex="0" data-copy><code>#!/bin/sh
+exec 2&gt;&amp;1
+umask 077
+cd /opt/helltube/app || exit 1
+export PATH=/usr/local/bin:/usr/bin:/bin
+exec chpst -e /etc/helltube/env -u helltube:helltube /usr/local/bin/node /opt/helltube/app/server/main.js</code></pre>
+            <p>Create <code>/etc/sv/helltube/log/run</code>:</p>
+            <pre tabindex="0" data-copy><code>#!/bin/sh
+exec svlogd -tt /var/log/helltube</code></pre>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>sudo chmod 755 /etc/sv/helltube/run /etc/sv/helltube/log/run
+sudo ln -s /etc/sv/helltube /var/service/
+sudo sv up helltube
+sudo sv status helltube
+curl -fsS http://127.0.0.1:3000/api/health
+sudo ss -lntp 'sport = :3000'
+sudo tail -n 50 /var/log/helltube/current</code></pre>
+            <p>
+              Run the application as the unprivileged
+              <code>helltube</code> user; keep its envdir root-only. For later
+              maintenance use <code>sudo sv down helltube</code>,
+              <code>sudo sv up helltube</code>, and
+              <code>sudo sv restart helltube</code> in place of systemd commands
+              elsewhere in this guide. Include the envdir and service directory
+              in backups. This runit example does not reproduce systemd's
+              filesystem sandbox settings.
             </p>
             <h3 id="local-helltube">
               Native Windows and macOS: local experiment
@@ -1241,6 +1505,13 @@ HOST=127.0.0.1 ALLOWED_ORIGINS=http://127.0.0.1:3000 npm start</code></pre>
               nginx already owns 80/443.
             </p>
             <p>
+              On Arch use <code>sudo pacman -Syu --needed caddy</code>; on Rocky
+              10 with EPEL use <code>sudo dnf install caddy</code>; on Void use
+              <code>sudo xbps-install -y caddy</code>. All use the Caddyfile
+              below. On Rocky, resolve SELinux denials using the installed
+              service policy instead of disabling enforcement.
+            </p>
+            <p>
               On a fresh Caddy install, edit <code>/etc/caddy/Caddyfile</code>.
               On a shared proxy, add a site block and preserve its existing
               sites. Substitute your real domain:
@@ -1262,6 +1533,19 @@ sudo systemctl enable --now caddy
 sudo systemctl reload caddy
 curl -fsS https://watch.example.com/api/health
 curl -s -o /dev/null -w '%{http_code}\n' https://watch.example.com/internal</code></pre>
+            <p>
+              On Void, replace the two <code>systemctl</code> lines with
+              <code>sudo ln -s /etc/sv/caddy /var/service/</code> (only if not
+              already linked), <code>sudo sv up caddy</code>, and
+              <code
+                >sudo caddy reload --config /etc/caddy/Caddyfile --adapter
+                caddyfile</code
+              >. Use the same HTTPS checks. Existing nginx users can enable
+              <code>/etc/sv/nginx</code> similarly and reload with
+              <code>sudo nginx -s reload</code> after
+              <code>sudo nginx -t</code>; inspect <code>nginx -T</code> to
+              confirm which site directories are actually included.
+            </p>
             <p>
               Expect health to return 200 and the private path 404. No
               <code>tls_insecure_skip_verify</code>, wildcard CORS, cookie
@@ -1409,6 +1693,13 @@ DESKTOP_ICE_SERVERS=[]</code></pre>
 sudo systemctl restart helltube
 sudo ss -lntup 'sport = :44444'</code></pre>
             <p>
+              On Void, re-run the <a href="#void-runit">envdir conversion</a> to
+              include <code>desktop.env</code>, then use
+              <code>sudo sv restart helltube</code> instead of
+              <code>systemctl</code>. Check the same listeners and external
+              media paths.
+            </p>
+            <p>
               Open 44444 UDP and TCP in the host/provider firewalls and forward
               it through NAT using the same external port. The relay can
               initialize when a desktop session starts; absence before use is
@@ -1492,32 +1783,114 @@ Get-FileHash .\<!-- release:filename:windows-x64 -->Strife-0.1.0-preview.4-win-x
               setup; do not fetch individual DLLs from random sites. Profiles
               survive normal upgrades and uninstall.
             </p>
-            <h3>Linux x64: Ubuntu 24.04 baseline</h3>
+            <h3 id="linux-client">Linux x64: one portable archive</h3>
             <p>
-              The shipped tarball targets Ubuntu 24.04 x64 with GTK 3, WebKitGTK
-              4.1 and audio/X11 libraries. Use a desktop session with an audio
-              device, not a headless VPS shell. Install these runtime packages
-              on Ubuntu 24.04:
+              The same Linux tarball runs on Ubuntu 24.04, current Arch Linux,
+              Rocky 10 with EPEL/CRB, and current Void glibc on x86_64. It
+              includes .NET and the Mumble engine; install your distro's GTK 3,
+              WebKitGTK 4.1, audio, graphics, and X11 libraries below. Use a
+              desktop session with an audio device, not a headless VPS shell. A
+              .deb, .rpm, pacman, or XBPS wrapper is not needed to launch this
+              archive and would not change its binary requirements.
             </p>
+            <p>
+              The published binary requires glibc 2.38 or newer. Rocky 8/9 and
+              Void musl cannot run it directly; renaming the archive or wrapping
+              it in another package format does not fix the libc mismatch. Use a
+              supported desktop OS/edition. Linux ARM and native musl packages
+              are not published.
+            </p>
+            <h4>Ubuntu 24.04</h4>
             <pre tabindex="0" data-copy><code>sudo apt-get update
 sudo apt-get install -y libgtk-3-0 libwebkit2gtk-4.1-0 libnotify4 libasound2t64 \
   libsm6 libice6 libx11-xcb1 libxi6 libxrender1 libxcb-cursor0 \
   libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 \
   libxcb-xinerama0 libxcb-xkb1 libxcb-shape0 libxcb-xinput0 \
-  libxkbcommon-x11-0 libgl1 libopengl0 libegl1
-# Download the archive and adjacent checksum from the platform card.
+  libxkbcommon-x11-0 libgl1 libopengl0 libegl1</code></pre>
+            <h4 id="linux-arch">Arch Linux</h4>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>sudo pacman -Syu --needed gtk3 webkit2gtk-4.1 libnotify alsa-lib \
+  libsm libice libx11 libxi libxrender libxcb xcb-util-cursor \
+  xcb-util-image xcb-util-keysyms xcb-util-renderutil xcb-util-wm \
+  libxkbcommon-x11 libglvnd mesa icu openssl dbus</code></pre>
+            <p>
+              Use the current
+              <a
+                href="https://archlinux.org/packages/extra/x86_64/webkit2gtk-4.1/"
+                >WebKitGTK 4.1 package</a
+              >, not GTK 4's WebKitGTK 6. Keep Arch fully upgraded; partial
+              upgrades can break shared-library compatibility. On Wayland, also
+              install <code>xorg-xwayland</code> for the bundled voice engine.
+            </p>
+            <h4 id="linux-rocky">Rocky Linux 10</h4>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code>sudo dnf install -y epel-release dnf-plugins-core
+sudo dnf config-manager --set-enabled crb
+sudo dnf install -y gtk3 webkit2gtk4.1 libnotify alsa-lib libSM libICE \
+  libX11 libXi libXrender libxcb xcb-util-cursor xcb-util-image \
+  xcb-util-keysyms xcb-util-renderutil xcb-util-wm libxkbcommon-x11 \
+  libglvnd-glx libglvnd-opengl libglvnd-egl mesa-dri-drivers libicu \
+  openssl-libs dbus-daemon xorg-x11-server-Xwayland</code></pre>
+            <p>
+              <a
+                href="https://packages.fedoraproject.org/pkgs/webkitgtk/webkit2gtk4.1/"
+                >EPEL supplies WebKitGTK 4.1</a
+              >. Rocky 10 uses Wayland desktops; Strife's bundled Qt voice
+              engine needs Xwayland. Keep the normal session bus and graphics
+              drivers installed. These commands do not make Rocky 8/9
+              compatible.
+            </p>
+            <h4 id="linux-void">Void Linux glibc</h4>
+            <pre tabindex="0" data-copy><code>sudo xbps-install -Suy
+# Repeat if the first pass updated XBPS itself.
+sudo xbps-install -Suy
+sudo xbps-install -y gtk+3 libwebkit2gtk41 libnotify alsa-lib libSM libICE \
+  libX11 libXi libXrender libxcb xcb-util-cursor xcb-util-image \
+  xcb-util-keysyms xcb-util-renderutil xcb-util-wm libxkbcommon-x11 \
+  libglvnd mesa-dri icu libssl3 dbus tar gzip</code></pre>
+            <p>
+              Choose the <strong>glibc</strong> edition. Start Strife inside
+              your configured desktop/session bus. On Wayland, also install
+              <code>xorg-server-xwayland</code>. Follow Void's
+              <a
+                href="https://docs.voidlinux.org/config/graphical-session/graphics-drivers/index.html"
+                >graphics driver instructions</a
+              >
+              for your GPU and its
+              <a href="https://docs.voidlinux.org/config/media/pipewire.html"
+                >PipeWire session instructions</a
+              >
+              for audio; installing library packages alone does not create a
+              working desktop session.
+            </p>
+            <h4>Download, verify, and start (all supported distributions)</h4>
+            <pre
+              tabindex="0"
+              data-copy
+            ><code># Download the Linux archive and adjacent checksum from the platform card.
 sha256sum -c <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.4-linux-x64.tar.gz<!-- /release -->.sha256
 tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.4-linux-x64.tar.gz<!-- /release -->
 ./Strife/Strife</code></pre>
             <p>
               Extract into a fresh directory when upgrading instead of mixing
-              old and new files. Newer Ubuntu/Debian desktops may work but
-              package names/ABI requirements must match; Fedora and other
-              distributions need their own equivalent libraries. The server's
-              Fedora support does not imply a tested Fedora desktop package.
-              There is no published Linux ARM desktop build in this release. On
-              Wayland, test global shortcuts and screen-capture permissions in
-              your actual session.
+              old and new files. Run as your normal desktop user, without sudo.
+              The archive does not register a package-manager entry; replacing
+              its extracted directory upgrades the app. User profiles remain
+              separate. On Wayland, test global shortcuts and screen-capture
+              permissions in your actual session.
+            </p>
+            <p>
+              The existing release was checked in clean Arch, Rocky 10, and Void
+              glibc containers for library resolution, authenticated native
+              startup, RNNoise, mute commands, and clean native shutdown, plus
+              the desktop/WebKit startup path. Containers do not validate
+              physical microphones, GPU acceleration, global shortcuts, or
+              screen capture; test those on your real desktop. This adds distro
+              guidance for the existing download, not different binaries.
             </p>
             <h3>macOS 14+: Apple Silicon or Intel</h3>
             <ol>
@@ -1701,6 +2074,12 @@ sudo ss -lntup
 # On a Linux/macOS client on another network:
 set -o pipefail
 curl -fsSL https://strife.zip/scripts/doctor.sh | bash -s -- voice.example.com watch.example.com</code></pre>
+            <p>
+              On Void, replace <code>systemctl is-active helltube</code> with
+              <code>sv status helltube</code>. Read
+              <code>/var/log/helltube/current</code> instead of the systemd
+              journal.
+            </p>
             <ol>
               <li>
                 <strong>DNS:</strong> resolve both names outside your LAN. Check
@@ -1806,8 +2185,9 @@ curl -fsSL https://strife.zip/scripts/doctor.sh | bash -s -- voice.example.com w
                   <tr>
                     <td>Service/proxy/TLS</td>
                     <td>
-                      Your systemd unit/drop-ins; nginx or Caddy config;
-                      /etc/letsencrypt or Caddy's data directory
+                      Your systemd unit/drop-ins or /etc/sv/helltube on Void;
+                      nginx or Caddy config; /etc/letsencrypt or Caddy's data
+                      directory
                     </td>
                     <td>
                       Reconstruct listeners and renewal. Preserve
@@ -1841,6 +2221,16 @@ curl -fsSL https://strife.zip/scripts/doctor.sh | bash -s -- voice.example.com w
               deletion may faithfully preserve the deletion.
             </p>
             <h3>A consistent baseline backup</h3>
+            <p>
+              The following automatic stop/resume block is for systemd hosts. On
+              Void, use <code>sudo sv down helltube</code> and stop the Mumble
+              Compose service first; archive the same data plus
+              <code>/etc/sv/helltube</code>, then use
+              <code>sudo sv up helltube</code> and Compose start only for
+              services that were previously running. Keep
+              <code>/etc/helltube/env</code> with the other Helltube
+              configuration. Do not run the systemd block unchanged on Void.
+            </p>
             <p>
               Schedule downtime. Run this as one block in Bash on the server. It
               stops the two apps, records whether each was running, and tries to
@@ -2104,6 +2494,32 @@ sudo docker compose --project-directory /opt/strife-mumble ps</code></pre>
                       everyone back.
                     </td>
                   </tr>
+                  <tr>
+                    <td>
+                      Linux desktop reports GLIBC errors or missing libraries
+                    </td>
+                    <td>
+                      Check <code>ldd --version</code>, your CPU architecture,
+                      and the
+                      <a href="#linux-client">desktop dependency list</a>. Rocky
+                      8/9 and Void musl cannot run this archive. Do not replace
+                      the system libc or copy random shared libraries into the
+                      app directory.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      Linux desktop has a blank window or cannot connect to a
+                      display
+                    </td>
+                    <td>
+                      Launch as your desktop user inside a working graphical
+                      session with its session bus, GPU drivers, and Xwayland
+                      where needed. On Void check Mesa and graphics-driver
+                      setup. Inspect terminal output; do not disable the WebKit
+                      sandbox as a normal launch workaround.
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -2155,6 +2571,14 @@ sudo systemctl disable --now helltube
 # Managed install only, if its optional updater was enabled:
 sudo systemctl disable --now helltube-update.timer helltube-update.path</code></pre>
             <p>
+              On Void, replace the systemd lines with
+              <code>sudo sv down helltube</code> and
+              <code>sudo unlink /var/service/helltube</code> after confirming
+              that path is the service symlink you created. Keep its service
+              directory, configuration, and application data for recovery. The
+              manual runit setup has no automatic updater.
+            </p>
+            <p>
               Then remove only this site's proxy block, validate/reload the
               shared proxy, and close its provider/host firewall rules. Archive
               verified data/config before any permanent removal. Revoke
@@ -2190,8 +2614,8 @@ sudo systemctl disable --now helltube-update.timer helltube-update.path</code></
               deployment certification for every OS/provider combination. In
               particular, real DNS issuance, public firewall behavior, native
               media processing, OS microphone permissions and TURN require
-              testing on your infrastructure. Manual Fedora and native
-              Windows/macOS hosting have additional platform-specific
+              testing on your infrastructure. Manual Fedora, Arch, Rocky, Void,
+              and native Windows/macOS hosting have additional platform-specific
               dependencies.
             </p>
             <p>

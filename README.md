@@ -26,6 +26,8 @@ The site uses static HTML/CSS, self-hosted fonts, and a small JavaScript enhance
 
 The website theme, logos, and social card use Strife teal (`#00E0BB`), matching the app. The preview.4 downloads include appearance settings, installed-font discovery, an HSV color picker, chat styling, and fixed user controls sizing. The landing page and wiki describe these published features. Platform requirements and signing status are unchanged.
 
+The wiki also covers Arch, Rocky 10 (EPEL/CRB), and Void glibc for desktop installation and manual hosting, including runit on Void. All three use the existing Linux tarball; this documentation expansion does not change release metadata or create duplicate packages. Rocky 8/9 and Void musl are outside the desktop binary's glibc 2.38+ compatibility target. See [Linux validation](docs/linux-validation.md) for the tested environments and the limits of container checks.
+
 ## Local development
 
 Use Node.js 24 or newer:
