@@ -592,8 +592,8 @@ button[hidden],
   position: relative;
   height: 191px;
   overflow: hidden;
-  background: #241b16;
-  color: #f4dbba;
+  background: var(--panel);
+  color: var(--text);
   isolation: isolate;
   padding: 11px 10px;
 }
@@ -624,13 +624,13 @@ button[hidden],
   top: 5%;
   width: 85%;
   height: 84%;
-  border: 18px solid #b75a32;
+  border: 18px solid var(--accent-dim);
   border-radius: 50%;
   transform: rotate(-35deg) scaleX(0.65);
   z-index: -1;
 }
 .orbit-two {
-  border: 8px solid #efab55;
+  border: 8px solid var(--accent);
   transform: rotate(-35deg) scaleX(0.7);
   right: -14%;
   top: 12%;
@@ -644,8 +644,8 @@ button[hidden],
   width: 30%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: #e2a766;
-  box-shadow: 0 0 30px #ef763b30;
+  background: var(--accent-light);
+  box-shadow: 0 0 30px var(--accent-dim);
   z-index: -1;
 }
 .film-title {
@@ -654,7 +654,7 @@ button[hidden],
   line-height: 0.98;
   letter-spacing: -0.3px;
   margin-top: 29px;
-  text-shadow: 1px 1px 0 #1c1515;
+  text-shadow: 1px 1px 0 var(--bg);
 }
 .film-title em {
   color: var(--accent);
