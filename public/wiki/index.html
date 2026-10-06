@@ -45,7 +45,7 @@
         <p>
           Last reviewed: <time datetime="2026-09-28">28 September 2026</time>.
           Client baseline: Strife
-          <!-- release:version -->0.1.0-preview.4<!-- /release -->. Examples use
+          <!-- release:version -->0.1.0-preview.5<!-- /release -->. Examples use
           <code>voice.example.com</code>, <code>watch.example.com</code>, and
           the documentation-only IP <code>203.0.113.10</code>. Replace them with
           your real values.
@@ -1670,6 +1670,13 @@ curl -fsS https://watch.example.com/api/health</code></pre>
           <section id="screen-sharing">
             <h2>13 / Desktop sharing: the second networking job</h2>
             <p>
+              Use Helltube's browser screen sharing. The experimental native OBS
+              helper in Strife's development sources is not packaged in the
+              installers or archives; the next build retains browser sharing.
+              Direct HLS playback is a separate HTTP media path and does not
+              replace the WebRTC listener or TURN setup below.
+            </p>
+            <p>
               The default media bind is <code>127.0.0.1:44444</code>. Remote
               participants cannot use it until you change it. HTTPS/WSS
               establishes the session; WebRTC carries screen video/audio
@@ -1775,7 +1782,7 @@ sudo ss -lntup 'sport = :44444'</code></pre>
               tabindex="0"
               data-copy
             ><code># PowerShell, in the directory containing your download:
-Get-FileHash .\<!-- release:filename:windows-x64 -->Strife-0.1.0-preview.4-win-x64-Setup.exe<!-- /release --> -Algorithm SHA256</code></pre>
+Get-FileHash .\<!-- release:filename:windows-x64 -->Strife-0.1.0-preview.5-win-x64-Setup.exe<!-- /release --> -Algorithm SHA256</code></pre>
             <p>
               If the UI is blank, check WebView2. If a native DLL is missing,
               check the VC++ runtime and that the whole portable folder was
@@ -1872,8 +1879,8 @@ sudo xbps-install -y gtk+3 libwebkit2gtk41 libnotify alsa-lib libSM libICE \
               tabindex="0"
               data-copy
             ><code># Download the Linux archive and adjacent checksum from the platform card.
-sha256sum -c <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.4-linux-x64.tar.gz<!-- /release -->.sha256
-tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.4-linux-x64.tar.gz<!-- /release -->
+sha256sum -c <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.5-linux-x64.tar.gz<!-- /release -->.sha256
+tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.5-linux-x64.tar.gz<!-- /release -->
 ./Strife/Strife</code></pre>
             <p>
               Extract into a fresh directory when upgrading instead of mixing
@@ -1902,7 +1909,7 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.4-linux-x64.tar
                 Verify with
                 <code
                   >shasum -a 256 -c
-                  <!-- release:filename:macos-arm64 -->Strife-0.1.0-preview.4-osx-arm64.zip<!-- /release -->.sha256</code
+                  <!-- release:filename:macos-arm64 -->Strife-0.1.0-preview.5-osx-arm64.zip<!-- /release -->.sha256</code
                 >
                 (change the filename for Intel), extract, and move Strife.app to
                 Applications.
@@ -1926,7 +1933,7 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.4-linux-x64.tar
               are in
               <a
                 data-release-doc="docs/releases.md"
-                href="https://github.com/M-ax/strife/blob/6544e8a3c2fd6149f48c8f59968c7c981100d7c7/docs/releases.md"
+                href="https://github.com/M-ax/strife/blob/8fc31932b1042f579125a4dd6365b4a30343aa8c/docs/releases.md"
                 >Strife's release guide</a
               >.
             </p>
@@ -1995,11 +2002,73 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.4-linux-x64.tar
               not loaded in the chat pane. Reloading restores the retained
               attachments from the running voice session.
             </p>
+            <h3 id="next-build">Desktop media and download controls</h3>
+            <p>
+              The following features are included in the current downloads.
+              Keep using the installation
+              and signing guidance above; platform requirements are unchanged.
+            </p>
+            <ul>
+              <li>
+                <strong>Chat image viewer:</strong> click an embedded image, or
+                focus it and press Enter or Space. Switch between
+                <strong>Actual size</strong> and <strong>Fit to window</strong>.
+                Close with Escape, Close, or a click outside the viewer. Linked
+                attachments have a separate <strong>Open image link</strong>
+                action.
+              </li>
+              <li>
+                <strong>Downloads:</strong> expand the panel collapsed along the
+                bottom to see Helltube attachment transfer progress, cancel a
+                transfer, open the downloads folder, or clear finished entries.
+                Dock or float it like other panels. Files go into the Strife
+                profile's <code>downloads</code> folder; duplicate names get a
+                numbered suffix. History lasts for the app session; saved files
+                remain on disk. Browser-generated blob downloads, external links,
+                and fetch/XHR responses keep their existing browser behavior.
+              </li>
+              <li>
+                <strong>Helltube controls:</strong> an updated server supplies a
+                dedicated desktop embed with room selection and video mute
+                controls outside the frame. Helltube rooms remain independent of
+                Mumble channels. Older servers retain the ordinary embedded page.
+              </li>
+            </ul>
+            <h3>Direct HLS playback with an updated Helltube server</h3>
+            <p>
+              Both the current Strife downloads and updated Helltube backend/frontend
+              are required. The pinned bootstrap checkout in this guide does not
+              by itself promise this capability. Once negotiated, manifests,
+              encryption keys, and media segments travel directly from the HTTPS
+              metal backend to the player, bypassing Strife's local HTTP proxy.
+              Login, authenticated API calls, room controls, and signaling stay
+              behind the private loopback proxy. Uploads and attachment downloads
+              also retain their proxy path. Older servers keep legacy playback.
+            </p>
+            <p>
+              Direct playback uses short-lived grants bound to the issuing
+              session, media resource, and exact local origin, with automatic
+              renewal. It does not send account cookies or native host
+              capabilities to metal. Failed authorization stops playback rather
+              than silently retrying through the proxy. Treat grant-bearing URLs
+              as credentials: do not share them or include their query strings in
+              logs or diagnostics. Keep HTTPS certificate validation and existing
+              account-origin protections enabled.
+            </p>
+            <p>
+              If direct playback fails after an upgrade, verify matching Helltube
+              frontend/backend versions, browser-trusted HTTPS on the advertised
+              media origin, and direct-route CORS authorization. Test playback,
+              seeking, renewal, and logout after deployment. Do not disable TLS,
+              add wildcard credentialed CORS, or expose account APIs to arbitrary
+              loopback origins. Bypassing an HTTP hop is not a measured latency
+              guarantee and does not change WebRTC routing.
+            </p>
             <h3 id="source-updates">Appearance and panel settings</h3>
             <p>
               Strife uses a teal default accent, matching this website. The
               advertised
-              <!-- release:version -->0.1.0-preview.4<!-- /release -->
+              <!-- release:version -->0.1.0-preview.5<!-- /release -->
               downloads include these appearance and panel settings.
             </p>
             <p>
@@ -2595,7 +2664,7 @@ sudo systemctl disable --now helltube-update.timer helltube-update.path</code></
               The application details here follow
               <a
                 data-release-doc="README.md"
-                href="https://github.com/M-ax/strife/blob/6544e8a3c2fd6149f48c8f59968c7c981100d7c7/README.md"
+                href="https://github.com/M-ax/strife/blob/8fc31932b1042f579125a4dd6365b4a30343aa8c/README.md"
                 >Strife's source and connection guide</a
               >
               and the

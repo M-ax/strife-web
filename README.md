@@ -40,6 +40,14 @@ Open http://localhost:4317. Local seeding requires the archives described in rel
 
 ## Prepare a release
 
+### Desktop/media release notes
+
+The landing FAQ and wiki's `#next-build` section describe features included in preview.5: the chat image viewer, dockable Downloads panel, dedicated Helltube embed controls, and negotiated direct-to-metal HLS playback. Direct playback requires updated Strife and matching Helltube backend/frontend assets. Login, authenticated control/signaling, uploads, and attachment downloads remain proxied; playback grants are short-lived and bound to the session, resource, and exact local origin. Older servers retain legacy routing. Do not claim a measured latency improvement.
+
+The experimental Windows native OBS sharing helper is **not included** by the normal Strife publish script. Keep browser sharing instructions and do not advertise the helper as shipping. OS/runtime requirements, Windows unsigned status, and macOS ad-hoc signing/notarization limitations are unchanged.
+
+The preview.5 packages were built and validated on all four native targets from `8fc31932b1042f579125a4dd6365b4a30343aa8c` in [Publish run 37405009037](https://github.com/M-ax/strife/actions/runs/37405009037), with all compiled Mumble caches reused. Import only the complete validated package set and regenerate marked references. Helltube's bootstrap source/hash pin is separate: the currently pinned installer must not be presented as providing the new desktop-media capability without its own reviewed update and validation.
+
 Build and test the app on each native target using the neighboring Strife repository's release scripts. Collect these five packages in one directory:
 
 - Strife-VERSION-win-x64-Setup.exe — Windows x64 installer, including WebView2 and Visual C++ prerequisites.
@@ -50,11 +58,11 @@ Build and test the app on each native target using the neighboring Strife reposi
 
 Import the complete set without repacking the native archives:
 
-    node scripts/import-release.mjs ../strife/artifacts/release 0.1.0-preview.4 6544e8a3c2fd6149f48c8f59968c7c981100d7c7
+    node scripts/import-release.mjs ../strife/artifacts/release 0.1.0-preview.5 8fc31932b1042f579125a4dd6365b4a30343aa8c
 
 PowerShell callers can also use:
 
-    ./scripts/package-release.ps1 -SourceDirectory ../strife/artifacts/release -Version 0.1.0-preview.4 -SourceRef 6544e8a3c2fd6149f48c8f59968c7c981100d7c7
+    ./scripts/package-release.ps1 -SourceDirectory ../strife/artifacts/release -Version 0.1.0-preview.5 -SourceRef 8fc31932b1042f579125a4dd6365b4a30343aa8c
 
 The importer checks all five packages, copies them to releases, and writes per-file sizes and SHA-256 hashes to release.json and adjacent checksum files. Existing versioned files with different bytes are rejected. Choose a new version for every new build: R2 keys are immutable release locations of the form releases/VERSION/FILENAME, so resuming a download cannot mix builds.
 
