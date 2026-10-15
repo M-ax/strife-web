@@ -1672,10 +1672,43 @@ curl -fsS https://watch.example.com/api/health</code></pre>
             <p>
               Use Helltube's browser screen sharing. The experimental native OBS
               helper in Strife's development sources is not packaged in the
-              installers or archives; the next build retains browser sharing.
+              currently advertised installers or archives. Normal release builds
+              retain browser sharing unless a bundled helper is explicitly
+              qualified and included.
               Direct HLS playback is a separate HTTP media path and does not
               replace the WebRTC listener or TURN setup below.
             </p>
+            <h3 id="native-sharing-development">Native sharing: development only</h3>
+            <p>
+              The Windows development helper offers screen/window filtering,
+              local live previews and source thumbnails, an audio meter, and
+              Automatic or Manual audio selection. Automatic uses a system
+              playback output for a screen or application audio for a window;
+              Manual lets you choose an application or output independently.
+              Audio is off until enabled, and application capture can include
+              other windows or browser tabs from the same application.
+            </p>
+            <p>
+              The default is <strong>1080p60 8 Mbps</strong>. Presets and custom
+              controls extend to <strong>4K60 40 Mbps</strong> with a matching
+              Helltube server. Smaller sources are not upscaled. Hardware
+              encoders are checked locally before use; unavailable encoders stay
+              disabled. Older servers keep higher quality settings unavailable.
+              A configured 60 fps is not a guarantee of sustained receiver
+              performance: local high-motion testing showed different results
+              across software, NVIDIA, and AMD encoders.
+            </p>
+            <p>
+              These features are not in the downloads advertised on this site.
+              The native helper is Windows-only at present; macOS/Linux native
+              capture and audio, clean-machine and installer certification,
+              and complete distribution/source materials remain release work.
+              Opt-in portable development packaging is not a supported public
+              release. If native sharing is unavailable, use browser sharing;
+              if a development helper reports stale modules, rebuild its complete
+              payload rather than copying individual DLLs.
+            </p>
+            <h3>Networking for published browser sharing</h3>
             <p>
               The default media bind is <code>127.0.0.1:44444</code>. Remote
               participants cannot use it until you change it. HTTPS/WSS

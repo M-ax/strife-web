@@ -46,6 +46,10 @@ The landing FAQ and wiki's `#next-build` section describe features included in p
 
 The experimental Windows native OBS sharing helper is **not included** by the normal Strife publish script. Keep browser sharing instructions and do not advertise the helper as shipping. OS/runtime requirements, Windows unsigned status, and macOS ad-hoc signing/notarization limitations are unchanged.
 
+The landing FAQ and wiki's `#native-sharing-development` subsection separately describe source-development work: local previews/thumbnails, audio meters, Automatic/Manual application audio, custom quality through 4K60 40 Mbps, no-upscale output, and locally probed hardware encoding. Default quality is 1080p60 8 Mbps. These descriptions must not be folded into the current-download feature list until actual qualified packages contain the helper. A Windows-only portable development build does not justify changing `release.json`, its source ref, platform support claims, or signing notes.
+
+GitHub Actions supplies the existing four native app-build runners and installs Inno Setup for Windows packaging. That does not implement the missing macOS/Linux streaming helpers or complete their permission, portal, signing, hardware, and distribution-source validation. The normal workflow continues to omit the helper. Keep the advertised package manifest unchanged for source-only updates; a full release still requires all five actual packages, R2 upload, website deployment, and production verification.
+
 The preview.5 packages were built and validated on all four native targets from `8fc31932b1042f579125a4dd6365b4a30343aa8c` in [Publish run 37405009037](https://github.com/M-ax/strife/actions/runs/37405009037), with all compiled Mumble caches reused. Import only the complete validated package set and regenerate marked references. Helltube's bootstrap source/hash pin is separate: the currently pinned installer must not be presented as providing the new desktop-media capability without its own reviewed update and validation.
 
 Build and test the app on each native target using the neighboring Strife repository's release scripts. Collect these five packages in one directory:
