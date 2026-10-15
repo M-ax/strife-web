@@ -1,51 +1,51 @@
 {
-  "version": "0.1.0-preview.5",
-  "publishedAt": "2026-10-06",
-  "sourceRef": "8fc31932b1042f579125a4dd6365b4a30343aa8c",
+  "version": "0.1.0-preview.6",
+  "publishedAt": "2026-10-15",
+  "sourceRef": "5ae1f2409569340355404f1b7cd5b774078597e5",
   "downloads": [
     {
       "id": "windows-x64",
       "platform": "Windows x64",
-      "filename": "Strife-0.1.0-preview.5-win-x64-Setup.exe",
-      "key": "releases/0.1.0-preview.5/Strife-0.1.0-preview.5-win-x64-Setup.exe",
-      "bytes": 310752994,
-      "sha256": "60e62633a943ca019b02d648aec7ea412ff908ed764f152782b0ce13389bd028",
+      "filename": "Strife-0.1.0-preview.6-win-x64-Setup.exe",
+      "key": "releases/0.1.0-preview.6/Strife-0.1.0-preview.6-win-x64-Setup.exe",
+      "bytes": 312575459,
+      "sha256": "981a572b11d53aa6a36500af1fcb33be72ffc588eb68d556a7bef834d197bff6",
       "contentType": "application/vnd.microsoft.portable-executable"
     },
     {
       "id": "windows-x64-portable",
       "platform": "Windows x64 portable",
-      "filename": "Strife-0.1.0-preview.5-win-x64.zip",
-      "key": "releases/0.1.0-preview.5/Strife-0.1.0-preview.5-win-x64.zip",
-      "bytes": 100722745,
-      "sha256": "0bb5f631dfb322a8815a73ff308ad54c9f21b58af046eb31ab9a576dae8bf1df",
+      "filename": "Strife-0.1.0-preview.6-win-x64.zip",
+      "key": "releases/0.1.0-preview.6/Strife-0.1.0-preview.6-win-x64.zip",
+      "bytes": 100792533,
+      "sha256": "423d9c3cfb07074bea7db577ab58db43bb63a004a115c2a0e432d2a3be703798",
       "contentType": "application/zip"
     },
     {
       "id": "linux-x64",
       "platform": "Linux x64",
-      "filename": "Strife-0.1.0-preview.5-linux-x64.tar.gz",
-      "key": "releases/0.1.0-preview.5/Strife-0.1.0-preview.5-linux-x64.tar.gz",
-      "bytes": 105236954,
-      "sha256": "6628ea2054110c35afdf0b59de0d011c23106c3fe8c41262c4e5b185fc24d2e9",
+      "filename": "Strife-0.1.0-preview.6-linux-x64.tar.gz",
+      "key": "releases/0.1.0-preview.6/Strife-0.1.0-preview.6-linux-x64.tar.gz",
+      "bytes": 105321963,
+      "sha256": "202c372d7298ad89b1646cde3ca7b1e9b55598d6576fa1e2f63040397fc7b057",
       "contentType": "application/gzip"
     },
     {
       "id": "macos-arm64",
       "platform": "macOS Apple Silicon",
-      "filename": "Strife-0.1.0-preview.5-osx-arm64.zip",
-      "key": "releases/0.1.0-preview.5/Strife-0.1.0-preview.5-osx-arm64.zip",
-      "bytes": 94959167,
-      "sha256": "0d19ad94c83e025040d3e39c2b565a6999889b51c2932a5ff34442f77e029171",
+      "filename": "Strife-0.1.0-preview.6-osx-arm64.zip",
+      "key": "releases/0.1.0-preview.6/Strife-0.1.0-preview.6-osx-arm64.zip",
+      "bytes": 95028923,
+      "sha256": "e99214ec59d3e306f15c787e18b666af2a35cef0f2026f08f6ea61f0c00382f9",
       "contentType": "application/zip"
     },
     {
       "id": "macos-x64",
       "platform": "macOS Intel",
-      "filename": "Strife-0.1.0-preview.5-osx-x64.zip",
-      "key": "releases/0.1.0-preview.5/Strife-0.1.0-preview.5-osx-x64.zip",
-      "bytes": 98875111,
-      "sha256": "cda8ffe7db454b56c4b8022024f1e197d5326b6fc0ec20f7c032b7bcf6ffa9b2",
+      "filename": "Strife-0.1.0-preview.6-osx-x64.zip",
+      "key": "releases/0.1.0-preview.6/Strife-0.1.0-preview.6-osx-x64.zip",
+      "bytes": 98948425,
+      "sha256": "84497c5d773025c9456983f1c8e049caa82b20cc6aeb708fe88c7647753dfc2f",
       "contentType": "application/zip"
     }
   ]
