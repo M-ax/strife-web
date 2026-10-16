@@ -42,7 +42,7 @@ Open http://localhost:4317. Local seeding requires the archives described in rel
 
 ### Desktop/media release notes
 
-The landing FAQ and wiki's `#next-build` section describe features retained in preview.6: the chat image viewer, dockable Downloads panel, dedicated Helltube embed controls, and negotiated direct-to-metal HLS playback. This release refreshes desktop integration and packaging checks without bundling the native streaming helper. Direct playback requires updated Strife and matching Helltube backend/frontend assets. Login, authenticated control/signaling, uploads, and attachment downloads remain proxied; playback grants are short-lived and bound to the session, resource, and exact local origin. Older servers retain legacy routing. Do not claim a measured latency improvement.
+The landing FAQ and wiki describe preview.7's per-user Windows installation and authenticated OTA updates, plus retained features: the chat image viewer, dockable Downloads panel, dedicated Helltube embed controls, and negotiated direct-to-metal HLS playback. Windows installed builds download updates quietly; the Update button installs and restarts, while ordinary exit installs without relaunching. Older installs require one manual migration. Portable, Linux and macOS packages remain manual-update only. Direct playback still requires matching Helltube assets, and the native streaming helper is not bundled.
 
 The experimental Windows native OBS sharing helper is **not included** by the normal Strife publish script. Keep browser sharing instructions and do not advertise the helper as shipping. OS/runtime requirements, Windows unsigned status, and macOS ad-hoc signing/notarization limitations are unchanged.
 
@@ -50,7 +50,7 @@ The landing FAQ and wiki's `#native-sharing-development` subsection separately d
 
 GitHub Actions supplies the existing four native app-build runners and installs Inno Setup for Windows packaging. That does not implement the missing macOS/Linux streaming helpers or complete their permission, portal, signing, hardware, and distribution-source validation. The normal workflow continues to omit the helper. Keep the advertised package manifest unchanged for source-only updates; a full release still requires all five actual packages, R2 upload, website deployment, and production verification.
 
-The preview.6 packages were built and validated on all four native targets from `5ae1f2409569340355404f1b7cd5b774078597e5` in [Publish run 38808922065](https://github.com/M-ax/strife/actions/runs/38808922065). GitHub had evicted the compiled Mumble caches; all four unchanged engines were recovered from hash-verified preview.5 artifacts after checking native-input provenance, then cached again. Normal package/startup checks and Windows installation/upgrade/removal tests passed. Import only the complete validated package set and regenerate marked references. Helltube's bootstrap source/hash pin is separate: the currently pinned installer must not be presented as providing the new desktop-media capability without its own reviewed update and validation.
+The preview.7 packages were built and validated on all four native targets from `4f0ce71f30ba6cee6fe75af9fc87e8e3af4c0898` in [Publish run 38853246230](https://github.com/M-ax/strife/actions/runs/38853246230), reusing the unchanged compiled Mumble caches. Normal package/startup checks passed. Windows additionally passed installation, upgrade, removal, and real signed OTA exit/restart tests under a standard user account. Import only the complete validated package set and regenerate marked references. Helltube's bootstrap source/hash pin remains separate.
 
 Build and test the app on each native target using the neighboring Strife repository's release scripts. Collect these five packages in one directory:
 
@@ -62,11 +62,11 @@ Build and test the app on each native target using the neighboring Strife reposi
 
 Import the complete set without repacking the native archives:
 
-    node scripts/import-release.mjs ../strife/artifacts/release 0.1.0-preview.6 5ae1f2409569340355404f1b7cd5b774078597e5
+    node scripts/import-release.mjs ../strife/artifacts/release 0.1.0-preview.7 4f0ce71f30ba6cee6fe75af9fc87e8e3af4c0898
 
 PowerShell callers can also use:
 
-    ./scripts/package-release.ps1 -SourceDirectory ../strife/artifacts/release -Version 0.1.0-preview.6 -SourceRef 5ae1f2409569340355404f1b7cd5b774078597e5
+    ./scripts/package-release.ps1 -SourceDirectory ../strife/artifacts/release -Version 0.1.0-preview.7 -SourceRef 4f0ce71f30ba6cee6fe75af9fc87e8e3af4c0898
 
 The importer checks all five packages, copies them to releases, and writes per-file sizes and SHA-256 hashes to release.json and adjacent checksum files. Existing versioned files with different bytes are rejected. Choose a new version for every new build: R2 keys are immutable release locations of the form releases/VERSION/FILENAME, so resuming a download cannot mix builds.
 
@@ -88,6 +88,16 @@ Feeds expire after 30 days. Renew metadata using the Strife signing workflow
 and the same immutable bytes/source revision, import it and deploy before expiry.
 Never put the private signing key in this repository. Key rotation requires a
 client transition release signed by an existing trusted key.
+
+Remote uploads use 8 MiB R2 multipart parts, avoiding Wrangler's 300 MiB
+single-upload limit and large-request gateway timeouts. The uploader creates an
+authenticated temporary Worker restricted to one exact package key, supplies a
+random capability through Cloudflare's secret store, and deletes that Worker in
+`finally`. Its capability expires after 30 minutes even if the uploader is
+interrupted. No S3 key or upload secret is stored in this repository. Existing
+objects are reused only when their size/hash match; mismatches are never
+overwritten. If cleanup reports a Worker name, remove that temporary Worker in
+Cloudflare before retrying.
 
 Supply the Strife commit, tag, or branch used to build the packages as `SOURCE_REF` (`-SourceRef` in PowerShell); prefer an immutable commit or release tag. New versions require it. Reimporting the same version preserves the existing source ref when omitted. The importer records it in `release.json` and updates the website's marked build references, including wiki versions, command filenames, and source-documentation links.
 

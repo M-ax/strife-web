@@ -10,7 +10,7 @@
     "directory": "./public",
     "binding": "ASSETS",
     "not_found_handling": "404-page",
-    "run_worker_first": ["/api/*", "/download/*"],
+    "run_worker_first": ["/api/*", "/download/*", "/updates/*"],
   },
   "r2_buckets": [{ "binding": "RELEASES", "bucket_name": "strife-releases" }],
   "dev": {

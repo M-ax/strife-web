@@ -5,6 +5,7 @@ import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { readUpdates } from "./update-feed.mjs";
+import { uploadRemoteRelease } from "./remote-multipart.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const mode = process.argv[2];
@@ -54,6 +55,10 @@ for (const item of packages) {
     throw new Error(`Archive does not match release.json: ${item.filename}`);
 }
 for (const item of packages) {
+  if (mode === "--remote") {
+    await uploadRemoteRelease(root, path.join(root, "releases", item.filename), item);
+    continue;
+  }
   const result = spawnSync(
     process.execPath,
     [

@@ -12,7 +12,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "build": "npm run check && wrangler deploy --dry-run --outdir .build",
-    "test": "node --test tests/worker.test.mjs tests/release-docs.test.mjs tests/update-feed.test.mjs",
+    "test": "node --test tests/worker.test.mjs tests/release-docs.test.mjs tests/update-feed.test.mjs tests/multipart-upload.test.mjs",
     "test:browser": "node --test tests/browser.test.mjs tests/docs.browser.test.mjs",
     "test:docs": "node --test tests/docs.browser.test.mjs",
     "test:mumble": "node --test tests/mumble.smoke.mjs",
