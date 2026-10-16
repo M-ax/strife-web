@@ -1,4 +1,5 @@
 import release from "../release.json" with { type: "json" };
+import updates from "../updates.json" with { type: "json" };
 
 interface Download {
   id: string;
@@ -11,6 +12,17 @@ interface Download {
 }
 
 const downloads: Download[] = release.downloads;
+interface UpdateEnvelope { payload: string; signature: string }
+// Signatures and all fields are verified by the release preflight and again by
+// the desktop. The worker never generates or modifies signed update metadata.
+const feeds = (updates.feeds as UpdateEnvelope[]).map(envelope => {
+  const manifest = JSON.parse(atob(envelope.payload));
+  return { envelope, manifest, download: {
+    id: `update-${manifest.channel}`, platform: "Windows x64 update",
+    filename: manifest.fileName, key: `releases/${manifest.version}/${manifest.fileName}`,
+    bytes: manifest.bytes, sha256: manifest.sha256, contentType: "application/octet-stream",
+  } as Download };
+});
 
 interface Env {
   ASSETS: Fetcher;
@@ -145,6 +157,16 @@ async function route(request: Request, env: Env): Promise<Response> {
       { status: 405, headers: { Allow: "GET, HEAD" } },
     );
   const path = new URL(request.url).pathname;
+  if (path.startsWith("/updates/")) {
+    const feed = feeds.find(item => path === `/updates/windows-${item.manifest.channel}.json`);
+    if (feed) {
+      if (!(await currentObject(env, feed.download))) return unavailable();
+      return Response.json(feed.envelope, { headers: { "Cache-Control": "no-store" } });
+    }
+    const asset = feeds.find(item => path === `/updates/packages/${item.download.filename}`);
+    if (asset) return download(request, env, asset.download);
+    return new Response("No update is published for this channel.", { status: 404, headers: { "Cache-Control": "no-store" } });
+  }
   if (path === "/api/release") {
     const catalog = await Promise.all(
       downloads.map(async (item) => {

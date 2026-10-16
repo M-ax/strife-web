@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import release from "../release.json" with { type: "json" };
+import { readUpdates, verifyUpdate } from "./update-feed.mjs";
 
 const origin = process.argv[2] || "https://strife.zip";
 const response = await fetch(new URL("/api/release", origin));
@@ -13,12 +14,23 @@ assert.equal(
   "package count",
 );
 
-for (const item of release.downloads) {
+const updates = await readUpdates();
+for (const update of updates) {
+  const response = await fetch(new URL(`/updates/windows-${update.manifest.channel}.json`, origin), { redirect: "error" });
+  assert.equal(response.status, 200, "update feed status");
+  const envelope = await response.json();
+  assert.deepEqual(envelope, update.envelope, "deployed signed update metadata");
+  verifyUpdate(envelope);
+}
+for (const item of [...release.downloads, ...updates.map(update => update.download)]) {
+  const isUpdate = item.id.startsWith("update-");
   const remote = catalog.downloads.find((entry) => entry.id === item.id);
-  assert.ok(remote?.available, `${item.id} is available`);
-  for (const field of ["filename", "bytes", "sha256", "contentType"])
-    assert.equal(remote[field], item[field], `${item.id}: ${field}`);
-  const url = new URL("/download/" + item.id, origin);
+  if (!isUpdate) {
+    assert.ok(remote?.available, `${item.id} is available`);
+    for (const field of ["filename", "bytes", "sha256", "contentType"])
+      assert.equal(remote[field], item[field], `${item.id}: ${field}`);
+  }
+  const url = new URL(isUpdate ? "/updates/packages/" + item.filename : "/download/" + item.id, origin);
   const head = await fetch(url, { method: "HEAD" });
   assert.equal(head.status, 200, `${item.id}: HEAD`);
   assert.equal(head.headers.get("Content-Length"), String(item.bytes));
@@ -31,11 +43,11 @@ for (const item of release.downloads) {
   assert.equal(partial.status, 206, `${item.id}: resumable download`);
   assert.equal(partial.headers.get("Content-Range"), `bytes 0-3/${item.bytes}`);
   assert.equal((await partial.arrayBuffer()).byteLength, 4);
-  const checksum = await fetch(
-    new URL("/download/" + item.id + ".sha256", origin),
-  );
-  assert.equal(checksum.status, 200);
-  assert.equal(await checksum.text(), `${item.sha256}  ${item.filename}\n`);
+  if (!isUpdate) {
+    const checksum = await fetch(new URL("/download/" + item.id + ".sha256", origin));
+    assert.equal(checksum.status, 200);
+    assert.equal(await checksum.text(), `${item.sha256}  ${item.filename}\n`);
+  }
   const download = await fetch(url, { signal: AbortSignal.timeout(600_000) });
   assert.equal(download.status, 200, `${item.id}: full download`);
   const hash = createHash("sha256");

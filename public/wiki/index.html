@@ -1800,9 +1800,11 @@ sudo ss -lntup 'sport = :44444'</code></pre>
                 Confirm the source and checksum before choosing to run it.
               </li>
               <li>
-                Run setup, choose your installation options, and launch Strife
-                from the Start Menu. Allow microphone access under Windows
-                privacy settings.
+                Run setup normally, not as administrator. Strife installs for
+                your account under <code>%LOCALAPPDATA%\Programs\Strife</code>.
+                Launch from the Start Menu and allow microphone access under
+                Windows privacy settings. Installing or updating the bundled
+                Visual C++ prerequisite may request administrator approval.
               </li>
               <li>
                 For portable use, extract the complete ZIP to a writable
@@ -1811,6 +1813,23 @@ sudo ss -lntup 'sport = :44444'</code></pre>
                 x64 runtime already installed.
               </li>
             </ol>
+            <p id="windows-updates">
+              <strong>Quiet Windows updates:</strong> installed builds download
+              authenticated updates in the background. The small
+              <strong>Update</strong> button installs a ready update and restarts.
+              Otherwise it installs when you quit, without reopening Strife.
+              Incomplete downloads do not delay quitting; failures appear in the
+              application menu without repeated pop-ups. Portable ZIPs, macOS
+              and Linux still require manual updates.
+            </p>
+            <p>
+              <strong>Moving from an older installer:</strong> close Strife,
+              uninstall the old installation in Windows Settings, then run the
+              new Setup for your account. Profiles, identities and preferences
+              survive uninstall. This one-time installation is required:
+              older builds do not have an updater. If an update needs newer
+              Windows or Microsoft prerequisites, run Setup manually instead.
+            </p>
             <pre
               tabindex="0"
               data-copy

@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import worker, { parseRange } from "../src/worker.ts";
 import manifest from "../release.json" with { type: "json" };
+import updates from "../updates.json" with { type: "json" };
 const release = manifest.downloads.find(
   (item) => item.id === "windows-x64-portable",
 );
@@ -44,6 +45,43 @@ function environment(object = metadata) {
   };
 }
 const request = (path, init) => new Request("https://strife.zip" + path, init);
+
+test("unknown update channels and filenames cannot select arbitrary R2 keys", async () => {
+  for (const path of ["/updates/windows-evil.json", "/updates/packages/evil.nupkg"]) {
+    const result = await worker.fetch(request(path), environment());
+    assert.equal(result.status, 404);
+  }
+});
+
+for (const envelope of updates.feeds) {
+  const value = JSON.parse(Buffer.from(envelope.payload, "base64"));
+  test(`signed ${value.channel} feed only advertises a present package and supports ranges`, async () => {
+    const env = {
+      ASSETS: environment().ASSETS,
+      RELEASES: {
+        async head(key) {
+          assert.equal(key, `releases/${value.version}/${value.fileName}`);
+          return { ...metadata, size: value.bytes };
+        },
+        async get(key, options) {
+          assert.equal(key, `releases/${value.version}/${value.fileName}`);
+          assert.deepEqual(options.range, { offset: 0, length: 4 });
+          return { ...metadata, body: new Uint8Array([80, 75, 3, 4]) };
+        },
+      },
+    };
+    const feed = await worker.fetch(request(`/updates/windows-${value.channel}.json`), env);
+    assert.equal(feed.status, 200);
+    assert.equal(feed.headers.get("Cache-Control"), "no-store");
+    assert.deepEqual(await feed.json(), envelope);
+    const part = await worker.fetch(request(`/updates/packages/${value.fileName}`, { headers: { Range: "bytes=0-3" } }), env);
+    assert.equal(part.status, 206);
+    assert.equal(part.headers.get("Content-Range"), `bytes 0-3/${value.bytes}`);
+    assert.equal((await part.arrayBuffer()).byteLength, 4);
+    env.RELEASES.head = async () => null;
+    assert.equal((await worker.fetch(request(`/updates/windows-${value.channel}.json`), env)).status, 503);
+  });
+}
 
 test("unpublished and mismatched releases are unavailable, with a useful download page", async () => {
   for (const object of [null, { ...metadata, size: 1 }]) {

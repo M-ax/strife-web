@@ -70,6 +70,25 @@ PowerShell callers can also use:
 
 The importer checks all five packages, copies them to releases, and writes per-file sizes and SHA-256 hashes to release.json and adjacent checksum files. Existing versioned files with different bytes are rejected. Choose a new version for every new build: R2 keys are immutable release locations of the form releases/VERSION/FILENAME, so resuming a download cannot mix builds.
 
+For updater-capable Windows releases, also collect `Strife-VERSION-full.nupkg`
+and the signed `windows-preview.json` (or `windows-stable.json`) from the same
+workflow, then run:
+
+    node scripts/import-update.mjs ARTIFACT_DIRECTORY
+
+This verifies the client-pinned RSA-PSS signature, package size/hash, version and
+exact source commit before updating `updates.json`. The Worker serves unchanged
+signed envelopes under `/updates/windows-CHANNEL.json` and full packages under
+`/updates/packages/FILENAME`. `release:upload` uploads the OTA package along with
+the five public downloads; `release:verify` checks all six and the signed feed.
+Upload before deploying. The installer remains unsigned in the Windows
+Authenticode sense; authenticated OTA metadata is a separate protection.
+
+Feeds expire after 30 days. Renew metadata using the Strife signing workflow
+and the same immutable bytes/source revision, import it and deploy before expiry.
+Never put the private signing key in this repository. Key rotation requires a
+client transition release signed by an existing trusted key.
+
 Supply the Strife commit, tag, or branch used to build the packages as `SOURCE_REF` (`-SourceRef` in PowerShell); prefer an immutable commit or release tag. New versions require it. Reimporting the same version preserves the existing source ref when omitted. The importer records it in `release.json` and updates the website's marked build references, including wiki versions, command filenames, and source-documentation links.
 
 ### Refresh website and wiki references

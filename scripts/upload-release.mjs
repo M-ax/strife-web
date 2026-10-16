@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { readUpdates } from "./update-feed.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const mode = process.argv[2];
@@ -12,12 +13,16 @@ if (!["--local", "--remote"].includes(mode))
 const release = JSON.parse(
   await readFile(path.join(root, "release.json"), "utf8"),
 );
+const updates = await readUpdates();
+const packages = [...release.downloads, ...updates.map(item => item.download)];
 const types = new Map([
   ["windows-x64", "application/vnd.microsoft.portable-executable"],
   ["windows-x64-portable", "application/zip"],
   ["linux-x64", "application/gzip"],
   ["macos-arm64", "application/zip"],
   ["macos-x64", "application/zip"],
+  ["update-preview", "application/octet-stream"],
+  ["update-stable", "application/octet-stream"],
 ]);
 if (
   !/^\d+\.\d+\.\d+(?:-[A-Za-z0-9]+(?:[.-][A-Za-z0-9]+)*)?$/.test(
@@ -29,13 +34,13 @@ if (
   throw new Error("Invalid release manifest.");
 const ids = new Set();
 // Check every package before uploading any part of a release.
-for (const item of release.downloads) {
+for (const item of packages) {
   if (
     !types.has(item.id) ||
     ids.has(item.id) ||
     item.contentType !== types.get(item.id) ||
-    !/^[\w.-]+\.(?:zip|exe|tar\.gz)$/.test(item.filename) ||
-    item.key !== `releases/${release.version}/${item.filename}`
+    !/^[\w.-]+\.(?:zip|exe|tar\.gz|nupkg)$/.test(item.filename) ||
+    (!item.id.startsWith("update-") && item.key !== `releases/${release.version}/${item.filename}`)
   )
     throw new Error("Invalid release path or platform.");
   ids.add(item.id);
@@ -48,7 +53,7 @@ for (const item of release.downloads) {
   )
     throw new Error(`Archive does not match release.json: ${item.filename}`);
 }
-for (const item of release.downloads) {
+for (const item of packages) {
   const result = spawnSync(
     process.execPath,
     [
