@@ -45,7 +45,7 @@
         <p>
           Last reviewed: <time datetime="2026-09-28">28 September 2026</time>.
           Client baseline: Strife
-          <!-- release:version -->0.1.0-preview.7<!-- /release -->. Examples use
+          <!-- release:version -->0.1.0-preview.8<!-- /release -->. Examples use
           <code>voice.example.com</code>, <code>watch.example.com</code>, and
           the documentation-only IP <code>203.0.113.10</code>. Replace them with
           your real values.
@@ -1834,13 +1834,34 @@ sudo ss -lntup 'sport = :44444'</code></pre>
               tabindex="0"
               data-copy
             ><code># PowerShell, in the directory containing your download:
-Get-FileHash .\<!-- release:filename:windows-x64 -->Strife-0.1.0-preview.7-win-x64-Setup.exe<!-- /release --> -Algorithm SHA256</code></pre>
+Get-FileHash .\<!-- release:filename:windows-x64 -->Strife-0.1.0-preview.8-win-x64-Setup.exe<!-- /release --> -Algorithm SHA256</code></pre>
             <p>
               If the UI is blank, check WebView2. If a native DLL is missing,
               check the VC++ runtime and that the whole portable folder was
               extracted. Install prerequisites from Microsoft or use the bundled
               setup; do not fetch individual DLLs from random sites. Profiles
               survive normal upgrades and uninstall.
+            </p>
+            <h4 id="xbox-wireless">Xbox Wireless controller reconnects</h4>
+            <p>
+              The current Windows downloads include the fix for the reported
+              controller shutoff on input after reconnecting while Strife is
+              running. Controller shortcuts remain enabled. Update the complete
+              installation or portable folder so the new native voice engine is
+              included; this is not a settings-only workaround.
+            </p>
+            <p>
+              If the symptom persists, close older Mumble or Strife instances
+              before retesting. Leave the updated Strife running, power the
+              controller off and on normally, and verify input in Steam or a game
+              across several reconnects. A lit controller without working input
+              is not a successful test. The fix does not require disabling
+              Windows input drivers or changing controller firmware. See the
+              <a
+                data-release-doc="docs/windows-xinput-reconnect.md"
+                href="https://github.com/M-ax/strife/blob/0a4845f37c18f6e016b782aea5d9c17f3c56b654/docs/windows-xinput-reconnect.md"
+                >native reconnect fix and validation notes</a
+              >.
             </p>
             <h3 id="linux-client">Linux x64: one portable archive</h3>
             <p>
@@ -1931,8 +1952,8 @@ sudo xbps-install -y gtk+3 libwebkit2gtk41 libnotify alsa-lib libSM libICE \
               tabindex="0"
               data-copy
             ><code># Download the Linux archive and adjacent checksum from the platform card.
-sha256sum -c <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.7-linux-x64.tar.gz<!-- /release -->.sha256
-tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.7-linux-x64.tar.gz<!-- /release -->
+sha256sum -c <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.8-linux-x64.tar.gz<!-- /release -->.sha256
+tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.8-linux-x64.tar.gz<!-- /release -->
 ./Strife/Strife</code></pre>
             <p>
               Extract into a fresh directory when upgrading instead of mixing
@@ -1961,7 +1982,7 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.7-linux-x64.tar
                 Verify with
                 <code
                   >shasum -a 256 -c
-                  <!-- release:filename:macos-arm64 -->Strife-0.1.0-preview.7-osx-arm64.zip<!-- /release -->.sha256</code
+                  <!-- release:filename:macos-arm64 -->Strife-0.1.0-preview.8-osx-arm64.zip<!-- /release -->.sha256</code
                 >
                 (change the filename for Intel), extract, and move Strife.app to
                 Applications.
@@ -1985,7 +2006,7 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.7-linux-x64.tar
               are in
               <a
                 data-release-doc="docs/releases.md"
-                href="https://github.com/M-ax/strife/blob/4f0ce71f30ba6cee6fe75af9fc87e8e3af4c0898/docs/releases.md"
+                href="https://github.com/M-ax/strife/blob/0a4845f37c18f6e016b782aea5d9c17f3c56b654/docs/releases.md"
                 >Strife's release guide</a
               >.
             </p>
@@ -2120,7 +2141,7 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.7-linux-x64.tar
             <p>
               Strife uses a teal default accent, matching this website. The
               advertised
-              <!-- release:version -->0.1.0-preview.7<!-- /release -->
+              <!-- release:version -->0.1.0-preview.8<!-- /release -->
               downloads include these appearance and panel settings.
             </p>
             <p>
@@ -2716,7 +2737,7 @@ sudo systemctl disable --now helltube-update.timer helltube-update.path</code></
               The application details here follow
               <a
                 data-release-doc="README.md"
-                href="https://github.com/M-ax/strife/blob/4f0ce71f30ba6cee6fe75af9fc87e8e3af4c0898/README.md"
+                href="https://github.com/M-ax/strife/blob/0a4845f37c18f6e016b782aea5d9c17f3c56b654/README.md"
                 >Strife's source and connection guide</a
               >
               and the

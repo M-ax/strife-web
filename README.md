@@ -42,7 +42,13 @@ Open http://localhost:4317. Local seeding requires the archives described in rel
 
 ### Desktop/media release notes
 
-The landing FAQ and wiki describe preview.7's per-user Windows installation and authenticated OTA updates, plus retained features: the chat image viewer, dockable Downloads panel, dedicated Helltube embed controls, and negotiated direct-to-metal HLS playback. Windows installed builds download updates quietly; the Update button installs and restarts, while ordinary exit installs without relaunching. Older installs require one manual migration. Portable, Linux and macOS packages remain manual-update only. Direct playback still requires matching Helltube assets, and the native streaming helper is not bundled.
+Preview.8 fixes the reported Windows Xbox Wireless controller shutoff on input
+after reconnecting while Strife is running. The landing page and wiki explain
+that controller shortcuts remain enabled, the complete native engine must be
+updated, and older Mumble/Strife instances should be closed when retesting.
+No Windows input-driver bypass or controller firmware change is required.
+
+The release retains preview.7's per-user Windows installation and authenticated OTA updates, plus the chat image viewer, dockable Downloads panel, dedicated Helltube embed controls, and negotiated direct-to-metal HLS playback. Windows installed builds download updates quietly; the Update button installs and restarts, while ordinary exit installs without relaunching. Older installs require one manual migration. Portable, Linux and macOS packages remain manual-update only. Direct playback still requires matching Helltube assets, and the native streaming helper is not bundled.
 
 The experimental Windows native OBS sharing helper is **not included** by the normal Strife publish script. Keep browser sharing instructions and do not advertise the helper as shipping. OS/runtime requirements, Windows unsigned status, and macOS ad-hoc signing/notarization limitations are unchanged.
 
@@ -50,7 +56,18 @@ The landing FAQ and wiki's `#native-sharing-development` subsection separately d
 
 GitHub Actions supplies the existing four native app-build runners and installs Inno Setup for Windows packaging. That does not implement the missing macOS/Linux streaming helpers or complete their permission, portal, signing, hardware, and distribution-source validation. The normal workflow continues to omit the helper. Keep the advertised package manifest unchanged for source-only updates; a full release still requires all five actual packages, R2 upload, website deployment, and production verification.
 
-The preview.7 packages were built and validated on all four native targets from `4f0ce71f30ba6cee6fe75af9fc87e8e3af4c0898` in [Publish run 38853246230](https://github.com/M-ax/strife/actions/runs/38853246230), reusing the unchanged compiled Mumble caches. Normal package/startup checks passed. Windows additionally passed installation, upgrade, removal, and real signed OTA exit/restart tests under a standard user account. Import only the complete validated package set and regenerate marked references. Helltube's bootstrap source/hash pin remains separate.
+The preview.8 packages were built and validated on all four native targets from
+`0a4845f37c18f6e016b782aea5d9c17f3c56b654` in
+[Publish run 39008107209](https://github.com/M-ax/strife/actions/runs/39008107209).
+The Mumble revision and dependency pins are unchanged, but the reconnect
+backport intentionally invalidates the previous compiled cache. All four
+engines were rebuilt, and their native-input fingerprints were verified in the
+actual packages. Normal package/startup checks passed. Windows additionally
+passed installation, upgrade, removal, and signed OTA exit/restart tests under
+a standard user account. The reported controller setup passed the packaged
+Strife candidate's physical reconnect/input test. Import only the complete
+validated package set and regenerate marked references. Helltube's bootstrap
+source/hash pin remains separate.
 
 Build and test the app on each native target using the neighboring Strife repository's release scripts. Collect these five packages in one directory:
 
@@ -62,11 +79,11 @@ Build and test the app on each native target using the neighboring Strife reposi
 
 Import the complete set without repacking the native archives:
 
-    node scripts/import-release.mjs ../strife/artifacts/release 0.1.0-preview.7 4f0ce71f30ba6cee6fe75af9fc87e8e3af4c0898
+    node scripts/import-release.mjs ../strife/artifacts/release 0.1.0-preview.8 0a4845f37c18f6e016b782aea5d9c17f3c56b654
 
 PowerShell callers can also use:
 
-    ./scripts/package-release.ps1 -SourceDirectory ../strife/artifacts/release -Version 0.1.0-preview.7 -SourceRef 4f0ce71f30ba6cee6fe75af9fc87e8e3af4c0898
+    ./scripts/package-release.ps1 -SourceDirectory ../strife/artifacts/release -Version 0.1.0-preview.8 -SourceRef 0a4845f37c18f6e016b782aea5d9c17f3c56b654
 
 The importer checks all five packages, copies them to releases, and writes per-file sizes and SHA-256 hashes to release.json and adjacent checksum files. Existing versioned files with different bytes are rejected. Choose a new version for every new build: R2 keys are immutable release locations of the form releases/VERSION/FILENAME, so resuming a download cannot mix builds.
 
