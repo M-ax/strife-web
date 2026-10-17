@@ -24,7 +24,7 @@ On Linux/macOS replace the mount argument with `"type=bind,source=$PWD,target=/w
 
 The site uses static HTML/CSS, self-hosted fonts, and a small JavaScript enhancement. The Worker streams Windows, Linux, and macOS downloads from the private R2 bucket **strife-releases**, bound as **RELEASES** in wrangler.jsonc. No production credentials are committed.
 
-The website theme, logos, and social card use Strife teal (`#00E0BB`), matching the app. The preview.4 downloads include appearance settings, installed-font discovery, an HSV color picker, chat styling, and fixed user controls sizing. The landing page and wiki describe these published features. Platform requirements and signing status are unchanged.
+The website theme, logos, and social card use Strife teal (`#00E0BB`), matching the app. The landing page and wiki describe preview.9's clearer voice statuses, stronger self identification, and compact panel headers, alongside existing appearance settings, installed-font discovery, an HSV color picker, chat styling, and fixed user controls sizing. Platform requirements and signing status are unchanged.
 
 The wiki also covers Arch, Rocky 10 (EPEL/CRB), and Void glibc for desktop installation and manual hosting, including runit on Void. All three use the existing Linux tarball; this documentation expansion does not change release metadata or create duplicate packages. Rocky 8/9 and Void musl are outside the desktop binary's glibc 2.38+ compatibility target. See [Linux validation](docs/linux-validation.md) for the tested environments and the limits of container checks.
 
@@ -42,7 +42,14 @@ Open http://localhost:4317. Local seeding requires the archives described in rel
 
 ### Desktop/media release notes
 
-Preview.8 fixes the reported Windows Xbox Wireless controller shutoff on input
+Preview.9 adds an accent rail, tinted row, and filled avatar for the logged-in
+user instead of a YOU badge. Separate subdued microphone-off and headphones-off
+icons show muted and deafened states, including both together; user-panel
+buttons use the same bundled font. Panel drag grips have tighter leading
+spacing, and vertical collapsed panels put expand and position options below
+the name.
+
+The release retains preview.8's fix for the reported Windows Xbox Wireless controller shutoff on input
 after reconnecting while Strife is running. The landing page and wiki explain
 that controller shortcuts remain enabled, the complete native engine must be
 updated, and older Mumble/Strife instances should be closed when retesting.
@@ -56,17 +63,18 @@ The landing FAQ and wiki's `#native-sharing-development` subsection separately d
 
 GitHub Actions supplies the existing four native app-build runners and installs Inno Setup for Windows packaging. That does not implement the missing macOS/Linux streaming helpers or complete their permission, portal, signing, hardware, and distribution-source validation. The normal workflow continues to omit the helper. Keep the advertised package manifest unchanged for source-only updates; a full release still requires all five actual packages, R2 upload, website deployment, and production verification.
 
-The preview.8 packages were built and validated on all four native targets from
-`0a4845f37c18f6e016b782aea5d9c17f3c56b654` in
-[Publish run 39008107209](https://github.com/M-ax/strife/actions/runs/39008107209).
-The Mumble revision and dependency pins are unchanged, but the reconnect
-backport intentionally invalidates the previous compiled cache. All four
-engines were rebuilt, and their native-input fingerprints were verified in the
-actual packages. Normal package/startup checks passed. Windows additionally
-passed installation, upgrade, removal, and signed OTA exit/restart tests under
-a standard user account. The reported controller setup passed the packaged
-Strife candidate's physical reconnect/input test. Import only the complete
-validated package set and regenerate marked references. Helltube's bootstrap
+The preview.9 packages were built and validated from exact Strife source commit
+`14a28fd05139610a823e93a31d98dbbe84e72e4e` in
+[Publish run 39028185926](https://github.com/M-ax/strife/actions/runs/39028185926).
+All four targets recovered the hash-verified, unchanged Mumble payloads from
+preview.8, including the Xbox reconnect backport, without recompiling native code.
+Managed/web tests and package/startup checks passed on all four targets. Windows
+also passed the standard-user installation and OTA checks and produced signed
+update metadata. The downloaded artifacts match GitHub's digests and CI package
+checksums; the UI assets, icon font and full license were checked inside every
+platform archive before import. No new Arch, Rocky, or Void
+distro-specific validation is claimed; the historical evidence and limits in
+[Linux validation](docs/linux-validation.md) still apply. Helltube's bootstrap
 source/hash pin remains separate.
 
 Build and test the app on each native target using the neighboring Strife repository's release scripts. Collect these five packages in one directory:
@@ -79,11 +87,11 @@ Build and test the app on each native target using the neighboring Strife reposi
 
 Import the complete set without repacking the native archives:
 
-    node scripts/import-release.mjs ../strife/artifacts/release 0.1.0-preview.8 0a4845f37c18f6e016b782aea5d9c17f3c56b654
+    node scripts/import-release.mjs ../strife/artifacts/release 0.1.0-preview.9 14a28fd05139610a823e93a31d98dbbe84e72e4e
 
 PowerShell callers can also use:
 
-    ./scripts/package-release.ps1 -SourceDirectory ../strife/artifacts/release -Version 0.1.0-preview.8 -SourceRef 0a4845f37c18f6e016b782aea5d9c17f3c56b654
+    ./scripts/package-release.ps1 -SourceDirectory ../strife/artifacts/release -Version 0.1.0-preview.9 -SourceRef 14a28fd05139610a823e93a31d98dbbe84e72e4e
 
 The importer checks all five packages, copies them to releases, and writes per-file sizes and SHA-256 hashes to release.json and adjacent checksum files. Existing versioned files with different bytes are rejected. Choose a new version for every new build: R2 keys are immutable release locations of the form releases/VERSION/FILENAME, so resuming a download cannot mix builds.
 
@@ -176,5 +184,7 @@ Downloads support byte ranges, ETag validation, and HEAD requests. Only manifest
 ## Assets
 
 Barlow Condensed and DM Sans are self-hosted under their SIL Open Font Licenses. Refresh them with `npm run fonts`. The logo, favicon, illustration, and social image are original SVG/CSS artwork. Regenerate the social PNG with `node scripts/render-social.mjs`.
+
+The illustration's voice-status icons use Strife's unmodified 864-byte Symbols Nerd Font subset, self-hosted as `public/fonts/strife-voice.woff2`. Its full MIT/Apache licenses and subset notice are in `public/fonts/strife-voice-LICENSE.txt`, copied from the same Strife source revision.
 
 The illustrated interface uses sample conversations and an original fictional movie poster and is labeled as an illustration. Source and issue links point to https://github.com/M-ax/strife.

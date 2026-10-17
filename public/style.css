@@ -449,9 +449,36 @@ button[hidden],
   padding: 5px 0 4px 9px;
   line-height: 1.1;
 }
-.mini-user small {
-  font-size: 5px;
+.mini-user.self-user {
+  background: var(--accent-dim);
+  box-shadow: inset 2px 0 var(--accent);
+  border-radius: 3px;
+}
+.self-user .avatar {
+  background: var(--accent);
+}
+/* Unmodified Strife four-glyph subset; full licenses in fonts/strife-voice-LICENSE.txt. */
+@font-face {
+  font-family: "Strife Voice Icons";
+  src: url("/fonts/strife-voice.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+.mini-voice-status {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: auto;
   color: var(--muted);
+}
+.mini-voice-status i {
+  font: normal 400 10px/1 "Strife Voice Icons";
+}
+.mini-mic-off::before {
+  content: "\f036d";
+}
+.mini-headphones-off::before {
+  content: "\f07ce";
 }
 .avatar {
   width: 17px;

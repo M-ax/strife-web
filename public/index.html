@@ -109,7 +109,7 @@
             class="app-preview"
             data-highlight="voice"
             role="img"
-            aria-label="Illustrated Strife interface with voice channels, chat, and a shared video"
+            aria-label="Illustrated Strife interface with voice channels, chat, and a shared video. Max is speaking; goblin is muted. Your own row has an accent rail, tinted background, and filled avatar, with muted and deafened status icons."
           >
             <div class="app-topbar" aria-hidden="true">
               <span><b class="mini-mark">S</b> STRIFE</span
@@ -134,10 +134,16 @@
                 </div>
                 <div class="mini-user">
                   <span class="avatar avatar-peach">G</span> goblin
+                  <span class="mini-voice-status"
+                    ><i class="mini-mic-off"></i
+                  ></span>
                 </div>
-                <div class="mini-user">
+                <div class="mini-user self-user">
                   <span class="avatar avatar-green">Y</span> you
-                  <small>YOU</small>
+                  <span class="mini-voice-status"
+                    ><i class="mini-mic-off"></i
+                    ><i class="mini-headphones-off"></i
+                  ></span>
                 </div>
                 <div class="mini-channel dim">
                   › <span aria-hidden="true">♬</span> competitive cope
@@ -334,7 +340,10 @@
           </p>
           <p>
             Make it yours with custom colors, installed fonts, and a teal
-            default theme. User controls fit neatly in a fixed-height stack.
+            default theme. Your own voice row stands out with an accent rail,
+            tinted background, and filled avatar; subdued icons make mute and
+            deafen states clear. Panel drag grips sit closer to the edge, with
+            expand and position options below the name on vertical collapsed panels.
             <a href="/wiki/#source-updates"
               >See appearance and panel settings.</a
             >
@@ -449,7 +458,7 @@
                 >
                 <a
                   data-release-doc="docs/releases.md"
-                  href="https://github.com/M-ax/strife/blob/0a4845f37c18f6e016b782aea5d9c17f3c56b654/docs/releases.md"
+                  href="https://github.com/M-ax/strife/blob/14a28fd05139610a823e93a31d98dbbe84e72e4e/docs/releases.md"
                   >Linux setup instructions ↗</a
                 >
               </p>
@@ -592,6 +601,14 @@
                 >+</span
               >
             </summary>
+            <p>
+              Clearer voice status, less clutter: your own row now uses an accent
+              rail, tinted background, and filled avatar instead of a YOU badge.
+              Separate microphone-off and headphones-off icons show muted and
+              deafened states, including both together. Panel headers have tighter
+              drag-grip spacing, and vertical collapsed panels put expand and
+              position options directly below their name.
+            </p>
             <p>
               Windows includes the Xbox Wireless reconnect fix. The controller
               can reconnect without Strife waiting for another button press to

@@ -45,7 +45,7 @@
         <p>
           Last reviewed: <time datetime="2026-09-28">28 September 2026</time>.
           Client baseline: Strife
-          <!-- release:version -->0.1.0-preview.8<!-- /release -->. Examples use
+          <!-- release:version -->0.1.0-preview.9<!-- /release -->. Examples use
           <code>voice.example.com</code>, <code>watch.example.com</code>, and
           the documentation-only IP <code>203.0.113.10</code>. Replace them with
           your real values.
@@ -1834,7 +1834,7 @@ sudo ss -lntup 'sport = :44444'</code></pre>
               tabindex="0"
               data-copy
             ><code># PowerShell, in the directory containing your download:
-Get-FileHash .\<!-- release:filename:windows-x64 -->Strife-0.1.0-preview.8-win-x64-Setup.exe<!-- /release --> -Algorithm SHA256</code></pre>
+Get-FileHash .\<!-- release:filename:windows-x64 -->Strife-0.1.0-preview.9-win-x64-Setup.exe<!-- /release --> -Algorithm SHA256</code></pre>
             <p>
               If the UI is blank, check WebView2. If a native DLL is missing,
               check the VC++ runtime and that the whole portable folder was
@@ -1859,7 +1859,7 @@ Get-FileHash .\<!-- release:filename:windows-x64 -->Strife-0.1.0-preview.8-win-x
               Windows input drivers or changing controller firmware. See the
               <a
                 data-release-doc="docs/windows-xinput-reconnect.md"
-                href="https://github.com/M-ax/strife/blob/0a4845f37c18f6e016b782aea5d9c17f3c56b654/docs/windows-xinput-reconnect.md"
+                href="https://github.com/M-ax/strife/blob/14a28fd05139610a823e93a31d98dbbe84e72e4e/docs/windows-xinput-reconnect.md"
                 >native reconnect fix and validation notes</a
               >.
             </p>
@@ -1952,8 +1952,8 @@ sudo xbps-install -y gtk+3 libwebkit2gtk41 libnotify alsa-lib libSM libICE \
               tabindex="0"
               data-copy
             ><code># Download the Linux archive and adjacent checksum from the platform card.
-sha256sum -c <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.8-linux-x64.tar.gz<!-- /release -->.sha256
-tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.8-linux-x64.tar.gz<!-- /release -->
+sha256sum -c <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.9-linux-x64.tar.gz<!-- /release -->.sha256
+tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.9-linux-x64.tar.gz<!-- /release -->
 ./Strife/Strife</code></pre>
             <p>
               Extract into a fresh directory when upgrading instead of mixing
@@ -1964,13 +1964,14 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.8-linux-x64.tar
               permissions in your actual session.
             </p>
             <p>
-              The existing release was checked in clean Arch, Rocky 10, and Void
+              An earlier release was checked in clean Arch, Rocky 10, and Void
               glibc containers for library resolution, authenticated native
               startup, RNNoise, mute commands, and clean native shutdown, plus
-              the desktop/WebKit startup path. Containers do not validate
+              the desktop/WebKit startup path. Those checks have not been rerun
+              for this release. Containers do not validate
               physical microphones, GPU acceleration, global shortcuts, or
-              screen capture; test those on your real desktop. This adds distro
-              guidance for the existing download, not different binaries.
+              screen capture; test those on your real desktop. This distro
+              guidance uses the same Linux download, not different binaries.
             </p>
             <h3>macOS 14+: Apple Silicon or Intel</h3>
             <ol>
@@ -1982,7 +1983,7 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.8-linux-x64.tar
                 Verify with
                 <code
                   >shasum -a 256 -c
-                  <!-- release:filename:macos-arm64 -->Strife-0.1.0-preview.8-osx-arm64.zip<!-- /release -->.sha256</code
+                  <!-- release:filename:macos-arm64 -->Strife-0.1.0-preview.9-osx-arm64.zip<!-- /release -->.sha256</code
                 >
                 (change the filename for Intel), extract, and move Strife.app to
                 Applications.
@@ -2006,7 +2007,7 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.8-linux-x64.tar
               are in
               <a
                 data-release-doc="docs/releases.md"
-                href="https://github.com/M-ax/strife/blob/0a4845f37c18f6e016b782aea5d9c17f3c56b654/docs/releases.md"
+                href="https://github.com/M-ax/strife/blob/14a28fd05139610a823e93a31d98dbbe84e72e4e/docs/releases.md"
                 >Strife's release guide</a
               >.
             </p>
@@ -2054,6 +2055,16 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.8-linux-x64.tar
                 your server.
               </li>
             </ol>
+            <p>
+              Find yourself by the accent rail, tinted row, and filled avatar in
+              the channel list, rather than a YOU badge. The marker stays visible
+              while speaking, muted, or deafened. Speaking has a green avatar ring;
+              subdued microphone-off and headphones-off icons indicate mute and
+              deafen separately, with both shown when both states are active.
+              Hover for status tooltips; the icons also have accessible labels.
+              The user-panel buttons use matching icons, crossed out when mute
+              or deafen is active.
+            </p>
             <p>
               New Strife profiles start with RNNoise enabled. Imported Mumble
               settings preserve their previous processing choice. Use the audio
@@ -2141,7 +2152,7 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.8-linux-x64.tar
             <p>
               Strife uses a teal default accent, matching this website. The
               advertised
-              <!-- release:version -->0.1.0-preview.8<!-- /release -->
+              <!-- release:version -->0.1.0-preview.9<!-- /release -->
               downloads include these appearance and panel settings.
             </p>
             <p>
@@ -2165,11 +2176,21 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.8-linux-x64.tar
               separators and distinct timestamp, username, and link colors.
             </p>
             <p>
+              Voice status icons use a small bundled font that works offline,
+              independent of your selected UI font or installed fonts. Your own
+              channel-list row follows the UI accent while keeping its identity
+              marker distinct from speaking, mute, and deafen indicators.
+            </p>
+            <p>
               User controls stay 240px tall when stacked above or below another
               pane, and fill the available height when alone in a column. The
               fixed height fits the controls at normal window sizes; very small
               windows can still require scrolling. Drag the title or use its
-              position menu to rearrange panes.
+              position menu to rearrange panes. Drag grips now have tighter
+              leading spacing. On vertical collapsed panels, the expand button
+              and position/options menu sit directly below the panel name.
+              Panel dragging, keyboard controls, saved layouts, and hover
+              behavior are unchanged.
             </p>
             <h3>Import your existing identity</h3>
             <p>
@@ -2737,7 +2758,7 @@ sudo systemctl disable --now helltube-update.timer helltube-update.path</code></
               The application details here follow
               <a
                 data-release-doc="README.md"
-                href="https://github.com/M-ax/strife/blob/0a4845f37c18f6e016b782aea5d9c17f3c56b654/README.md"
+                href="https://github.com/M-ax/strife/blob/14a28fd05139610a823e93a31d98dbbe84e72e4e/README.md"
                 >Strife's source and connection guide</a
               >
               and the
