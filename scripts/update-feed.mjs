@@ -14,7 +14,18 @@ export function verifyUpdate(envelope, key = publicKey, now = Date.now(), requir
   }, Buffer.from(envelope.signature, "base64"))) throw new Error("Invalid update signature.");
   const value = JSON.parse(payload);
   const issued = Date.parse(value.issuedAt), expires = Date.parse(value.expiresAt);
-  if (value.schema !== 1 || !["stable", "preview"].includes(value.channel)
+  const frameworkNames = new Set(["Microsoft.NETCore.App", "Microsoft.AspNetCore.App"]);
+  const frameworksValid = value.schema === 1
+    ? value.dotNetFrameworks == null
+    : value.schema === 2 && Array.isArray(value.dotNetFrameworks)
+      && value.dotNetFrameworks.length === 2
+      && value.dotNetFrameworks.every(framework =>
+        framework !== null && typeof framework === "object" && !Array.isArray(framework)
+        && frameworkNames.delete(framework.name)
+        && typeof framework.version === "string" && /^[0-9]+\.[0-9]+\.[0-9]+$/.test(framework.version)
+        && framework.version.trim() === framework.version
+        && framework.version.split(".").every(component => Number(component) <= 2147483647));
+  if (!frameworksValid || !["stable", "preview"].includes(value.channel)
       || !/^\d+\.\d+\.\d+(?:-[A-Za-z0-9]+(?:[.-][A-Za-z0-9]+)*)?$/.test(value.version)
       || (value.channel === "stable" && value.version.includes("-"))
       || value.fileName !== `Strife-${value.version}-full.nupkg`
