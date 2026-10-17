@@ -45,7 +45,7 @@
         <p>
           Last reviewed: <time datetime="2026-09-28">28 September 2026</time>.
           Client baseline: Strife
-          <!-- release:version -->0.1.0-preview.9<!-- /release -->. Examples use
+          <!-- release:version -->0.1.0-preview.10<!-- /release -->. Examples use
           <code>voice.example.com</code>, <code>watch.example.com</code>, and
           the documentation-only IP <code>203.0.113.10</code>. Replace them with
           your real values.
@@ -1781,7 +1781,7 @@ sudo ss -lntup 'sport = :44444'</code></pre>
             <p>
               Use the <a href="/#download">platform downloads</a> and their
               published checksums. Select your computer's CPU architecture, not
-              the server's architecture. Packages include .NET and the native
+              the server's architecture. All packages include the native
               voice engine; there is no need to install a second Mumble client
               just to use Strife. You may still want upstream Mumble for
               advanced administration.
@@ -1790,8 +1790,11 @@ sudo ss -lntup 'sport = :44444'</code></pre>
             <ol>
               <li>
                 Use Windows 10 build 19041+ or Windows 11 on x64. Download the
-                setup EXE for the simplest installation. It includes the
-                WebView2 and Visual C++ prerequisites.
+                setup EXE for the simplest installation. Online Setup bundles
+                the app and voice engine, and downloads WebView2, Visual C++,
+                .NET Runtime and ASP.NET Core Runtime x64 when missing or
+                incompatible. These downloads need internet access; there is no
+                separate offline installer.
               </li>
               <li>
                 Verify the file's SHA-256 with the command below and compare it
@@ -1803,8 +1806,10 @@ sudo ss -lntup 'sport = :44444'</code></pre>
                 Run setup normally, not as administrator. Strife installs for
                 your account under <code>%LOCALAPPDATA%\Programs\Strife</code>.
                 Launch from the Start Menu and allow microphone access under
-                Windows privacy settings. Installing or updating the bundled
-                Visual C++ prerequisite may request administrator approval.
+                Windows privacy settings. Installing or updating the machine-wide
+                .NET or Visual C++ prerequisites may request administrator
+                approval. Silent Setup refuses missing/incompatible .NET or
+                missing/outdated Visual C++ without requesting elevation.
               </li>
               <li>
                 For portable use, extract the complete ZIP to a writable
@@ -1813,6 +1818,34 @@ sudo ss -lntup 'sport = :44444'</code></pre>
                 x64 runtime already installed.
               </li>
             </ol>
+            <p>
+              <strong>Official Microsoft downloads:</strong>
+              <a href="https://go.microsoft.com/fwlink/?linkid=2124701"
+                >WebView2 Evergreen standalone runtime (x64)</a
+              >
+              and
+              <a href="https://aka.ms/vs/17/release/vc_redist.x64.exe"
+                >Visual C++ Redistributable (x64)</a
+              >. Use these for portable setup or prerequisite repairs. Visual
+              C++ must meet this build's minimum version; an older v14 runtime
+              is not sufficient.
+            </p>
+            <p>
+              <strong>Installed Windows runtime requirements:</strong>
+              installed builds and OTA packages are
+              framework-dependent, using separately installed .NET 10 runtimes.
+              For manual installation or repair, use the
+              <a href="https://dotnet.microsoft.com/en-us/download/dotnet/10.0"
+                >Microsoft .NET 10 download page</a
+              >
+              and install both <strong>.NET Runtime</strong> and
+              <strong>ASP.NET Core Runtime</strong> for Windows x64, not the SDK
+              or Hosting Bundle. Each .NET framework must match the required
+              major/minor version with at least the required patch version.
+              The portable ZIP remains self-contained with .NET and the native
+              voice engine included, but requires WebView2 and Visual C++
+              separately. Linux and macOS also include .NET.
+            </p>
             <p id="windows-updates">
               <strong>Quiet Windows updates:</strong> installed builds download
               authenticated updates in the background. The small
@@ -1823,23 +1856,27 @@ sudo ss -lntup 'sport = :44444'</code></pre>
               and Linux still require manual updates.
             </p>
             <p>
-              <strong>Moving from an older installer:</strong> close Strife,
-              uninstall the old installation in Windows Settings, then run the
-              new Setup for your account. Profiles, identities and preferences
-              survive uninstall. This one-time installation is required:
-              older builds do not have an updater. If an update needs newer
+              <strong>Moving from an older installer:</strong> close Strife and
+              run the new Setup for your account manually once, even if your
+              existing installation already has an updater. Older clients reject
+              the new schema 2 feed that declares .NET requirements. If Setup
+              detects a legacy all-user installation, uninstall it in Windows
+              Settings first. Profiles, identities and preferences survive
+              uninstall. If an update needs newer
               Windows or Microsoft prerequisites, run Setup manually instead.
             </p>
             <pre
               tabindex="0"
               data-copy
             ><code># PowerShell, in the directory containing your download:
-Get-FileHash .\<!-- release:filename:windows-x64 -->Strife-0.1.0-preview.9-win-x64-Setup.exe<!-- /release --> -Algorithm SHA256</code></pre>
+Get-FileHash .\<!-- release:filename:windows-x64 -->Strife-0.1.0-preview.10-win-x64-Setup.exe<!-- /release --> -Algorithm SHA256</code></pre>
             <p>
               If the UI is blank, check WebView2. If a native DLL is missing,
               check the VC++ runtime and that the whole portable folder was
-              extracted. Install prerequisites from Microsoft or use the bundled
-              setup; do not fetch individual DLLs from random sites. Profiles
+              extracted. If an installed build reports a missing .NET framework,
+              repair both x64 .NET runtimes using the official links above or run
+              online Setup again. Check internet access if prerequisite downloads
+              fail. Do not fetch individual DLLs from random sites. Profiles
               survive normal upgrades and uninstall.
             </p>
             <h4 id="xbox-wireless">Xbox Wireless controller reconnects</h4>
@@ -1859,7 +1896,7 @@ Get-FileHash .\<!-- release:filename:windows-x64 -->Strife-0.1.0-preview.9-win-x
               Windows input drivers or changing controller firmware. See the
               <a
                 data-release-doc="docs/windows-xinput-reconnect.md"
-                href="https://github.com/M-ax/strife/blob/14a28fd05139610a823e93a31d98dbbe84e72e4e/docs/windows-xinput-reconnect.md"
+                href="https://github.com/M-ax/strife/blob/8cbe5d1debc5ab7d6f5472597a25cb9e97696410/docs/windows-xinput-reconnect.md"
                 >native reconnect fix and validation notes</a
               >.
             </p>
@@ -1952,8 +1989,8 @@ sudo xbps-install -y gtk+3 libwebkit2gtk41 libnotify alsa-lib libSM libICE \
               tabindex="0"
               data-copy
             ><code># Download the Linux archive and adjacent checksum from the platform card.
-sha256sum -c <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.9-linux-x64.tar.gz<!-- /release -->.sha256
-tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.9-linux-x64.tar.gz<!-- /release -->
+sha256sum -c <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.10-linux-x64.tar.gz<!-- /release -->.sha256
+tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.10-linux-x64.tar.gz<!-- /release -->
 ./Strife/Strife</code></pre>
             <p>
               Extract into a fresh directory when upgrading instead of mixing
@@ -1983,7 +2020,7 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.9-linux-x64.tar
                 Verify with
                 <code
                   >shasum -a 256 -c
-                  <!-- release:filename:macos-arm64 -->Strife-0.1.0-preview.9-osx-arm64.zip<!-- /release -->.sha256</code
+                  <!-- release:filename:macos-arm64 -->Strife-0.1.0-preview.10-osx-arm64.zip<!-- /release -->.sha256</code
                 >
                 (change the filename for Intel), extract, and move Strife.app to
                 Applications.
@@ -2007,7 +2044,7 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.9-linux-x64.tar
               are in
               <a
                 data-release-doc="docs/releases.md"
-                href="https://github.com/M-ax/strife/blob/14a28fd05139610a823e93a31d98dbbe84e72e4e/docs/releases.md"
+                href="https://github.com/M-ax/strife/blob/8cbe5d1debc5ab7d6f5472597a25cb9e97696410/docs/releases.md"
                 >Strife's release guide</a
               >.
             </p>
@@ -2152,7 +2189,7 @@ tar -xzf <!-- release:filename:linux-x64 -->Strife-0.1.0-preview.9-linux-x64.tar
             <p>
               Strife uses a teal default accent, matching this website. The
               advertised
-              <!-- release:version -->0.1.0-preview.9<!-- /release -->
+              <!-- release:version -->0.1.0-preview.10<!-- /release -->
               downloads include these appearance and panel settings.
             </p>
             <p>
@@ -2758,7 +2795,7 @@ sudo systemctl disable --now helltube-update.timer helltube-update.path</code></
               The application details here follow
               <a
                 data-release-doc="README.md"
-                href="https://github.com/M-ax/strife/blob/14a28fd05139610a823e93a31d98dbbe84e72e4e/README.md"
+                href="https://github.com/M-ax/strife/blob/8cbe5d1debc5ab7d6f5472597a25cb9e97696410/README.md"
                 >Strife's source and connection guide</a
               >
               and the

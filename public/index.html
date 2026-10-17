@@ -369,8 +369,8 @@
                 >Download Windows setup <span aria-hidden="true">↓</span></a
               >
               <p class="release-status" data-release-status role="status">
-                Run the installer. WebView2 and Visual C++ runtimes are
-                included.
+                Run online Setup. The app and voice engine are included;
+                missing Microsoft runtimes are downloaded when needed.
               </p>
               <details class="checksum-details" data-checksum-details hidden>
                 <summary>Trust, but verify. <span>SHA-256</span></summary>
@@ -415,7 +415,38 @@
               </p>
               <p>
                 This preview is unsigned, so Windows may show a publisher
-                warning. The .NET runtime is included.
+                warning. Setup requires internet access for prerequisite downloads.
+              </p>
+              <p id="windows-prerequisites">
+                <strong>Official Microsoft prerequisites:</strong> for portable
+                use or repairs, install
+                <a href="https://go.microsoft.com/fwlink/?linkid=2124701"
+                  >WebView2 Evergreen standalone runtime (x64)</a
+                >
+                and
+                <a href="https://aka.ms/vs/17/release/vc_redist.x64.exe"
+                  >Visual C++ Redistributable (x64)</a
+                >.
+              </p>
+              <p>
+                <strong>Smaller online installer:</strong> Setup downloads
+                WebView2, Visual C++ and .NET x64 only when missing or incompatible.
+                Installed builds and OTA packages use separately installed .NET.
+                For manual repair, select both <strong>.NET Runtime</strong> and
+                <strong>ASP.NET Core Runtime</strong>, Windows x64, on the
+                <a href="https://dotnet.microsoft.com/en-us/download/dotnet/10.0"
+                  >Microsoft .NET 10 download page</a
+                >, not the SDK or Hosting Bundle. The portable ZIP remains
+                self-contained with .NET and voice included; WebView2 and Visual
+                C++ remain external prerequisites.
+              </p>
+              <p>
+                <strong>Existing users:</strong> run the new Setup manually once,
+                including if your installation already has automatic updates.
+                Older clients cannot accept the new schema 2 update feed.
+                Run Setup normally, not as administrator; .NET and Visual C++
+                installation may request administrator approval. There is no
+                separate offline installer.
               </p>
             </div>
           </article>
@@ -458,7 +489,7 @@
                 >
                 <a
                   data-release-doc="docs/releases.md"
-                  href="https://github.com/M-ax/strife/blob/14a28fd05139610a823e93a31d98dbbe84e72e4e/docs/releases.md"
+                  href="https://github.com/M-ax/strife/blob/8cbe5d1debc5ab7d6f5472597a25cb9e97696410/docs/releases.md"
                   >Linux setup instructions ↗</a
                 >
               </p>
@@ -602,7 +633,15 @@
               >
             </summary>
             <p>
-              Clearer voice status, less clutter: your own row now uses an accent
+              Windows now has a smaller online installer: Setup bundles the app
+              and voice engine and downloads missing or incompatible Microsoft
+              runtimes. Existing users must run Setup manually once to move to
+              the schema 2 update feed, even if they already have automatic
+              updates. Portable packaging is unchanged. See the
+              <a href="#windows-prerequisites">Windows prerequisite details</a>.
+            </p>
+            <p>
+              Clearer voice status, less clutter: your own row uses an accent
               rail, tinted background, and filled avatar instead of a YOU badge.
               Separate microphone-off and headphones-off icons show muted and
               deafened states, including both together. Panel headers have tighter
